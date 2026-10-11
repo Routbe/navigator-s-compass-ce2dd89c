@@ -6,6 +6,8 @@ import type { LinkClickStats, VisitSpace, VisitStats } from "@/lib/visits.server
 import { useAuth } from "@/hooks/useAuth";
 import { useI18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
+import { paginate } from "@/lib/paginate";
+import { Button } from "@/components/ui/button";
 
 type SpaceFilter = VisitSpace | "all";
 
@@ -70,6 +72,9 @@ export function VisitorPanel({ defaultSpace = "all" }: { defaultSpace?: SpaceFil
   const load = useServerFn(getMyVisitStats);
   const loadClicks = useServerFn(getMyLinkClickStats);
   const [clicks, setClicks] = useState<LinkClickStats | null>(null);
+  const [page, setPage] = useState(1);
+  const recentPage = useMemo(() => paginate(stats?.recent ?? [], page, 10), [stats, page]);
+  useEffect(() => setPage(1), [days, space]);
 
   const refresh = useCallback(async () => {
     setLoading(true);
@@ -211,7 +216,7 @@ export function VisitorPanel({ defaultSpace = "all" }: { defaultSpace?: SpaceFil
         </p>
         {stats && stats.recent.length > 0 ? (
           <ul className="divide-y divide-border/60">
-            {stats.recent.map((v, i) => (
+            {recentPage.items.map((v, i) => (
               <li key={`${v.at}-${i}`} className="flex flex-wrap items-center gap-x-2 gap-y-0.5 py-1.5 text-[11px]">
                 <span className="font-mono">
                   {v.space === "root" ? `rout.be/${v.handle}` : `rout.be/u/${v.handle}`}
@@ -228,7 +233,22 @@ export function VisitorPanel({ defaultSpace = "all" }: { defaultSpace?: SpaceFil
             ))}
           </ul>
         ) : (
-          <p className="text-xs text-muted-foreground">{t("visits.empty")}</p>
+          <p className="py-4 text-center text-xs text-muted-foreground">
+            Nog geen bezoeken geregistreerd. Deel je profiel-link of QR om je eerste bezoekers te zien.
+          </p>
+        )}
+        {recentPage.pages > 1 && (
+          <div className="mt-2 flex items-center justify-between gap-2 border-t border-border/60 pt-2 text-xs">
+            <Button size="sm" variant="outline" disabled={recentPage.page <= 1} onClick={() => setPage(recentPage.page - 1)}>
+              Vorige
+            </Button>
+            <span className="text-muted-foreground">
+              Pagina {recentPage.page} van {recentPage.pages}
+            </span>
+            <Button size="sm" variant="outline" disabled={recentPage.page >= recentPage.pages} onClick={() => setPage(recentPage.page + 1)}>
+              Volgende
+            </Button>
+          </div>
         )}
       </div>
     </section>

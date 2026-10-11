@@ -36,6 +36,8 @@
 - `CONTACT_HASH_SALT` — Server-only random secret.
 - `ADMIN_BOOTSTRAP_TOKEN` — Server-only random secret.
 - `LOVABLE_CRON_SECRET` — Server-only random secret.
+- `CRON_SECRET` — Optional alias for `LOVABLE_CRON_SECRET` (asset cleanup accepts `?token=`).
+- `TELEGRAM_BOT_TOKEN` — Server-only BotFather token for the phone-verification bot (`/api/public/telegram/webhook`).
 
 ## Sign-in providers (optional; tile shows a notice when missing)
 

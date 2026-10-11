@@ -25,6 +25,9 @@ import { IdentityCard } from "@/components/dashboard/IdentityCard";
 import { NotificationsPanel } from "@/components/dashboard/NotificationsPanel";
 import { BadgeActivityPanel } from "@/components/dashboard/BadgeActivityPanel";
 import { VisitorPanel } from "@/components/dashboard/VisitorPanel";
+import { ShortLinksPanel } from "@/components/dashboard/ShortLinksPanel";
+import { AssetManagerPanel } from "@/components/dashboard/AssetManagerPanel";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/useAuth";
 import { useI18n } from "@/lib/i18n";
 import { formatDate } from "@/lib/format";
@@ -244,6 +247,15 @@ export default function Dashboard() {
     >
       <IdentityCard />
 
+      <Tabs defaultValue="overview" className="space-y-4">
+        <TabsList className="grid h-auto w-full grid-cols-2 gap-1 sm:grid-cols-4">
+          <TabsTrigger value="overview">Overzicht</TabsTrigger>
+          <TabsTrigger value="qrs">QR Codes</TabsTrigger>
+          <TabsTrigger value="links">Short Links</TabsTrigger>
+          <TabsTrigger value="files">Bestanden &amp; Media</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="overview" className="space-y-4">
       <section aria-label="Analytics" className="mb-4 grid grid-cols-3 gap-2 sm:gap-3">
         <Metric label="Saved QRs" value={totals?.saved ?? "—"} />
         <Metric label="Short links" value={totals?.tracked ?? "—"} hint="Repointable" />
@@ -269,6 +281,48 @@ export default function Dashboard() {
         </div>
       </section>
 
+          <div className="mb-4 flex flex-wrap gap-2">
+            <Button asChild size="sm" className="gap-1.5">
+              <Link to="/">
+                <Plus className="h-4 w-4" /> Nieuwe QR
+              </Link>
+            </Button>
+            <Button asChild size="sm" variant="outline" className="gap-1.5">
+              <Link to="/studio">
+                <Sparkles className="h-4 w-4" /> Studio openen
+              </Link>
+            </Button>
+          </div>
+          <div className="mb-4 space-y-4">
+            <VisitorPanel />
+            <NotificationsPanel />
+            <BadgeActivityPanel />
+          </div>
+      <section className="mb-6 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 rounded-2xl border border-border bg-muted/30 p-3.5 sm:mb-8 sm:p-5">
+        <div className="min-w-0">
+          <p className="truncate text-sm font-medium text-foreground">Use your own custom domain</p>
+          <p className="mt-0.5 text-xs text-muted-foreground">
+            Show <span className="font-mono">links.yourbrand.com</span> on scans instead of our
+            domain.
+          </p>
+        </div>
+        <Button asChild size="sm" variant="outline" className="shrink-0 gap-1.5">
+          <Link to="/dashboard/domains">
+            <Globe className="h-4 w-4" /> 🌐 Connect domain
+          </Link>
+        </Button>
+      </section>
+
+        </TabsContent>
+
+        <TabsContent value="qrs" className="space-y-4">
+          <div className="flex justify-end">
+            <Button asChild size="sm" variant="outline" className="gap-1.5">
+              <Link to="/studio">
+                <Edit3 className="h-4 w-4" /> Bewerken in Studio
+              </Link>
+            </Button>
+          </div>
       <section className="mb-4 rounded-2xl border border-border bg-card p-3.5 sm:p-5">
         <div className="mb-3 flex items-center justify-between gap-3">
           <h2 className="text-sm font-medium">Recent QR Codes</h2>
@@ -344,28 +398,17 @@ export default function Dashboard() {
         )}
       </section>
 
-      <section className="mb-6 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 rounded-2xl border border-border bg-muted/30 p-3.5 sm:mb-8 sm:p-5">
-        <div className="min-w-0">
-          <p className="truncate text-sm font-medium text-foreground">Use your own custom domain</p>
-          <p className="mt-0.5 text-xs text-muted-foreground">
-            Show <span className="font-mono">links.yourbrand.com</span> on scans instead of our
-            domain.
-          </p>
-        </div>
-        <Button asChild size="sm" variant="outline" className="shrink-0 gap-1.5">
-          <Link to="/dashboard/domains">
-            <Globe className="h-4 w-4" /> 🌐 Connect domain
-          </Link>
-        </Button>
-      </section>
+          <QrsPanel />
+        </TabsContent>
 
-      <div className="mb-4 space-y-4">
-        <VisitorPanel />
-        <NotificationsPanel />
-        <BadgeActivityPanel />
-      </div>
+        <TabsContent value="links">
+          <ShortLinksPanel />
+        </TabsContent>
 
-      <QrsPanel />
+        <TabsContent value="files">
+          <AssetManagerPanel />
+        </TabsContent>
+      </Tabs>
     </AppLayout>
   );
 }
