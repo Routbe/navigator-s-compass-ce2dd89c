@@ -74,9 +74,17 @@ export function IdentitiesPanel() {
         );
         return;
       }
-      if (result?.data?.url) window.location.href = result.data.url;
-    } catch {
-      toast.error("Koppelen is niet gelukt.");
+      const url = result?.data?.url;
+      if (url) {
+        window.location.assign(url);
+        return;
+      }
+      // Never fail silently: no error and no URL means the server returned nothing usable.
+      console.error(`[identities] ${provider.id} link returned no authorization URL`, result);
+      toast.error(`${provider.label}: kon de koppel-link niet ophalen. Probeer het opnieuw of contacteer support.`);
+    } catch (error) {
+      console.error(`[identities] ${provider.id} link failed`, error);
+      toast.error(`${provider.label}: koppelen is niet gelukt.`);
     } finally {
       setBusy(null);
     }
