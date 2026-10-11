@@ -11,6 +11,8 @@ import {
 } from "@/lib/status-bubble";
 import { isEmptyLayers, normalizeDesignLayers, serializeDesignLayers } from "./design-layers";
 import { stripBioLinks } from "@/lib/bio-rules";
+import type { ProfileQrStyle } from "@/lib/profile-qr";
+import { normalizeQrSettings } from "@/lib/qr-settings";
 /**
  * Weergavevoorkeuren van een publiek ROUT-profiel.
  *
@@ -230,6 +232,8 @@ export interface ProfileDisplayPrefs {
   ctaEffect: "none" | "glow" | "pulse" | "shimmer";
   /** Layered Design Studio as normalized JSON (see design-layers.ts); "" = off. */
   designLayers: string;
+  /** Opgeslagen stijl van de profiel-QR (null = standaard ROUT-stijl). */
+  qrSettings?: ProfileQrStyle | null;
 }
 
 /** Alle designvelden zitten in dezelfde JSON-blob. */
@@ -294,6 +298,7 @@ export const DEFAULT_DISPLAY_PREFS: ProfileDisplayPrefs = {
   designLayers: "",
   ctaBlockId: null,
   ctaEffect: "none",
+  qrSettings: null,
   ...DEFAULT_DESIGN_PREFS,
 };
 
@@ -513,9 +518,13 @@ export function parseDisplayPrefs(raw: unknown): ProfileDisplayPrefs {
     ctaBlockId: textOrNull(r["ctaBlockId"], 60),
     ctaEffect: oneOf(r["ctaEffect"], ["none", "glow", "pulse", "shimmer"], "none"),
     designLayers: normalizeLayersPref(r["designLayers"]),
+    qrSettings: normalizeQrSettings(r["qrSettings"]),
     ...normalizeDesignPrefs(r),
   };
 }
+
+/** Alias: valideert een ruwe `display_prefs`-blob. */
+export const normalizeDisplayPrefs = parseDisplayPrefs;
 
 /** CSS voor de bannerkaart boven het profiel. `null` = geen banner tonen. */
 export function bannerStyleOf(

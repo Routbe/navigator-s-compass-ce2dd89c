@@ -4,6 +4,7 @@ import { Award, Link2, Loader2, QrCode, RotateCcw, Save, Search, Trash2 } from "
 import { toast } from "sonner";
 
 import { AppLayout } from "@/components/layout/AppLayout";
+import { PhoneVerificationQueue } from "@/components/admin/PhoneVerificationQueue";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -322,6 +323,8 @@ export default function AdminOps() {
           </Button>
         </div>
       </section>
+
+      <PhoneVerificationQueue />
     </AppLayout>
   );
 }

@@ -129,3 +129,23 @@ export const adminRevokeBadge = createServerFn({ method: "POST" })
     enforceRateLimit(`admin-ops:write:${context.userId}`, 60, 60_000);
     return revokeBadge(data.userId, data.badgeSlug);
   });
+
+/** Admin: open phone verifications (international numbers, manual queue). */
+export const adminListPhoneVerifications = createServerFn({ method: "POST" })
+  .middleware([requireAuth])
+  .handler(async ({ context }) => {
+    const { assertAdminRole } = await import("./admin.server");
+    await assertAdminRole(context.userId);
+    const { listPendingPhoneVerifications } = await import("./phone/phone-otp.server");
+    return listPendingPhoneVerifications();
+  });
+
+export const adminApprovePhoneVerification = createServerFn({ method: "POST" })
+  .middleware([requireAuth])
+  .inputValidator((data: unknown) => z.object({ id: z.string().uuid() }).parse(data))
+  .handler(async ({ data, context }) => {
+    const { assertAdminRole } = await import("./admin.server");
+    await assertAdminRole(context.userId);
+    const { approvePhoneVerification } = await import("./phone/phone-otp.server");
+    return { ok: await approvePhoneVerification(data.id) };
+  });

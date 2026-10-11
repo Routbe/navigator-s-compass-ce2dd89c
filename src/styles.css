@@ -49,6 +49,8 @@
 
   --destructive: 4 66% 48%;
   --destructive-foreground: 40 43% 97%;
+  --warning: 32 90% 44%;
+  --warning-foreground: 40 43% 97%;
 
   --border: 34 14% 84%;
   /* Crisp ink border for tactile surfaces */
@@ -99,6 +101,8 @@
   --ochre-foreground: 37 50% 96%;
   --destructive: 4 66% 48%;
   --destructive-foreground: 42 31% 94%;
+  --warning: 34 92% 55%;
+  --warning-foreground: 30 6% 7%;
   --border: 30 5% 22%;
   --border-ink: 42 20% 88%;
   --input: 30 5% 24%;
@@ -148,6 +152,8 @@
   --color-terracotta-foreground: hsl(var(--terracotta-foreground));
   --color-sage: hsl(var(--sage));
   --color-sage-foreground: hsl(var(--sage-foreground));
+  --color-warning: hsl(var(--warning));
+  --color-warning-foreground: hsl(var(--warning-foreground));
   --color-ochre: hsl(var(--ochre));
   --color-ochre-foreground: hsl(var(--ochre-foreground));
   --color-destructive: hsl(var(--destructive));

@@ -1,5 +1,5 @@
-import { useMemo, useState } from "react";
-import { Download, FileText, ImageIcon, QrCode } from "lucide-react";
+import { useMemo, useRef, useState } from "react";
+import { Download, FileText, ImageIcon, QrCode, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -23,13 +23,24 @@ export function ProfileQrCard({
   handle,
   urlStyle,
   theme,
+  value,
+  onChange,
+  onSave,
 }: {
   handle: string;
   urlStyle: UrlStyle;
   theme?: string;
+  /** Opgeslagen stijl (bv. `prefs.qrSettings`). Zonder waarde: lokale staat. */
+  value?: ProfileQrStyle | null;
+  /** Studio: `setPref("qrSettings", next)` zodat de autosave-draft de stijl meeneemt. */
+  onChange?: (next: ProfileQrStyle) => void;
+  /** Standalone gebruik: direct opslaan (bv. via `saveQrSettingsFn`). */
+  onSave?: (next: ProfileQrStyle) => void | Promise<unknown>;
 }) {
   const palette = themeOf(theme ?? "cream");
-  const [style, setStyle] = useState<ProfileQrStyle>(DEFAULT_PROFILE_QR_STYLE);
+  const [localStyle, setLocalStyle] = useState<ProfileQrStyle>(value ?? DEFAULT_PROFILE_QR_STYLE);
+  const style: ProfileQrStyle = onChange ? (value ?? DEFAULT_PROFILE_QR_STYLE) : localStyle;
+  const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const clean = handle.replace(/^@+/, "").trim();
   const url = clean ? styledProfileUrl(clean, urlStyle) : "";
@@ -37,8 +48,24 @@ export function ProfileQrCard({
 
   const svg = useMemo(() => (url ? profileQrSvg(url, style, { size: 512 }) : ""), [url, style]);
 
+  function commit(next: ProfileQrStyle) {
+    if (onChange) onChange(next);
+    else setLocalStyle(next);
+    if (onSave) {
+      if (saveTimer.current) clearTimeout(saveTimer.current);
+      saveTimer.current = setTimeout(() => {
+        Promise.resolve(onSave(next)).catch(() => toast.error("QR-stijl opslaan mislukt"));
+      }, 600);
+    }
+  }
+
   function patch(next: Partial<ProfileQrStyle>) {
-    setStyle((current) => ({ ...current, ...next }));
+    commit({ ...style, ...next });
+  }
+
+  function resetDefault() {
+    commit({ ...DEFAULT_PROFILE_QR_STYLE });
+    toast.success("Standaard ROUT-stijl hersteld");
   }
 
   function matchTheme() {
@@ -119,7 +146,10 @@ export function ProfileQrCard({
               />
             </label>
             <Button size="sm" variant="outline" onClick={matchTheme}>
-              Match profielthema
+              Kleuren overnemen van profiel
+            </Button>
+            <Button size="sm" variant="ghost" onClick={resetDefault}>
+              <RotateCcw className="mr-1 h-4 w-4" aria-hidden /> Herstel standaard ROUT-stijl
             </Button>
           </div>
 

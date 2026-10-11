@@ -115,6 +115,7 @@ import { Route as ApiPublicBlueskyCallbackRouteImport } from './routes/api_.publ
 import { Route as ApiPublicBlueskyClientMetadataDotjsonRouteImport } from './routes/api_.public.bluesky.client-metadata[.]json'
 import { Route as ApiPublicBlueskyStartRouteImport } from './routes/api_.public.bluesky.start'
 import { Route as ApiPublicCronCheckDnsRouteImport } from './routes/api_.public.cron.check-dns'
+import { Route as ApiPublicCronCleanupAssetsRouteImport } from './routes/api_.public.cron.cleanup-assets'
 import { Route as ApiPublicCronPurgeAltchaRouteImport } from './routes/api_.public.cron.purge-altcha'
 import { Route as ApiPublicCronPurgeSharedFilesRouteImport } from './routes/api_.public.cron.purge-shared-files'
 import { Route as ApiPublicCronScanTransfersRouteImport } from './routes/api_.public.cron.scan-transfers'
@@ -130,6 +131,7 @@ import { Route as ApiPublicQrUploadRouteImport } from './routes/api_.public.qr.u
 import { Route as ApiPublicSessionLogoutRouteImport } from './routes/api_.public.session.logout'
 import { Route as ApiPublicSmsInboundRouteImport } from './routes/api_.public.sms.inbound'
 import { Route as ApiPublicSpotifyCallbackRouteImport } from './routes/api_.public.spotify.callback'
+import { Route as ApiPublicTelegramWebhookRouteImport } from './routes/api_.public.telegram.webhook'
 import { Route as ApiPublicWeatherWebhookTokenRouteImport } from './routes/api_.public.weather-webhook.$token'
 import { Route as ApiPublicWebhooksBankingRouteImport } from './routes/api_.public.webhooks.banking'
 import { Route as AuthenticatedConsoleAppsAppIdIndexRouteImport } from './routes/_authenticated/console.apps.$appId.index'
@@ -696,6 +698,12 @@ const ApiPublicCronCheckDnsRoute = ApiPublicCronCheckDnsRouteImport.update({
   path: '/api/public/cron/check-dns',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicCronCleanupAssetsRoute =
+  ApiPublicCronCleanupAssetsRouteImport.update({
+    id: '/api_/public/cron/cleanup-assets',
+    path: '/api/public/cron/cleanup-assets',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicCronPurgeAltchaRoute =
   ApiPublicCronPurgeAltchaRouteImport.update({
     id: '/api_/public/cron/purge-altcha',
@@ -777,6 +785,12 @@ const ApiPublicSpotifyCallbackRoute =
   ApiPublicSpotifyCallbackRouteImport.update({
     id: '/api_/public/spotify/callback',
     path: '/api/public/spotify/callback',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicTelegramWebhookRoute =
+  ApiPublicTelegramWebhookRouteImport.update({
+    id: '/api_/public/telegram/webhook',
+    path: '/api/public/telegram/webhook',
     getParentRoute: () => rootRouteImport,
   } as any)
 const ApiPublicWeatherWebhookTokenRoute =
@@ -981,6 +995,7 @@ export interface FileRoutesByFullPath {
   '/api/public/bluesky/client-metadata.json': typeof ApiPublicBlueskyClientMetadataDotjsonRoute
   '/api/public/bluesky/start': typeof ApiPublicBlueskyStartRoute
   '/api/public/cron/check-dns': typeof ApiPublicCronCheckDnsRoute
+  '/api/public/cron/cleanup-assets': typeof ApiPublicCronCleanupAssetsRoute
   '/api/public/cron/purge-altcha': typeof ApiPublicCronPurgeAltchaRoute
   '/api/public/cron/purge-shared-files': typeof ApiPublicCronPurgeSharedFilesRoute
   '/api/public/cron/scan-transfers': typeof ApiPublicCronScanTransfersRoute
@@ -996,6 +1011,7 @@ export interface FileRoutesByFullPath {
   '/api/public/session/logout': typeof ApiPublicSessionLogoutRoute
   '/api/public/sms/inbound': typeof ApiPublicSmsInboundRoute
   '/api/public/spotify/callback': typeof ApiPublicSpotifyCallbackRoute
+  '/api/public/telegram/webhook': typeof ApiPublicTelegramWebhookRoute
   '/api/public/weather-webhook/$token': typeof ApiPublicWeatherWebhookTokenRoute
   '/api/public/webhooks/banking': typeof ApiPublicWebhooksBankingRoute
   '/console/apps/': typeof AuthenticatedConsoleAppsIndexRoute
@@ -1115,6 +1131,7 @@ export interface FileRoutesByTo {
   '/api/public/bluesky/client-metadata.json': typeof ApiPublicBlueskyClientMetadataDotjsonRoute
   '/api/public/bluesky/start': typeof ApiPublicBlueskyStartRoute
   '/api/public/cron/check-dns': typeof ApiPublicCronCheckDnsRoute
+  '/api/public/cron/cleanup-assets': typeof ApiPublicCronCleanupAssetsRoute
   '/api/public/cron/purge-altcha': typeof ApiPublicCronPurgeAltchaRoute
   '/api/public/cron/purge-shared-files': typeof ApiPublicCronPurgeSharedFilesRoute
   '/api/public/cron/scan-transfers': typeof ApiPublicCronScanTransfersRoute
@@ -1130,6 +1147,7 @@ export interface FileRoutesByTo {
   '/api/public/session/logout': typeof ApiPublicSessionLogoutRoute
   '/api/public/sms/inbound': typeof ApiPublicSmsInboundRoute
   '/api/public/spotify/callback': typeof ApiPublicSpotifyCallbackRoute
+  '/api/public/telegram/webhook': typeof ApiPublicTelegramWebhookRoute
   '/api/public/weather-webhook/$token': typeof ApiPublicWeatherWebhookTokenRoute
   '/api/public/webhooks/banking': typeof ApiPublicWebhooksBankingRoute
   '/console/apps': typeof AuthenticatedConsoleAppsIndexRoute
@@ -1255,6 +1273,7 @@ export interface FileRoutesById {
   '/api_/public/bluesky/client-metadata.json': typeof ApiPublicBlueskyClientMetadataDotjsonRoute
   '/api_/public/bluesky/start': typeof ApiPublicBlueskyStartRoute
   '/api_/public/cron/check-dns': typeof ApiPublicCronCheckDnsRoute
+  '/api_/public/cron/cleanup-assets': typeof ApiPublicCronCleanupAssetsRoute
   '/api_/public/cron/purge-altcha': typeof ApiPublicCronPurgeAltchaRoute
   '/api_/public/cron/purge-shared-files': typeof ApiPublicCronPurgeSharedFilesRoute
   '/api_/public/cron/scan-transfers': typeof ApiPublicCronScanTransfersRoute
@@ -1270,6 +1289,7 @@ export interface FileRoutesById {
   '/api_/public/session/logout': typeof ApiPublicSessionLogoutRoute
   '/api_/public/sms/inbound': typeof ApiPublicSmsInboundRoute
   '/api_/public/spotify/callback': typeof ApiPublicSpotifyCallbackRoute
+  '/api_/public/telegram/webhook': typeof ApiPublicTelegramWebhookRoute
   '/api_/public/weather-webhook/$token': typeof ApiPublicWeatherWebhookTokenRoute
   '/api_/public/webhooks/banking': typeof ApiPublicWebhooksBankingRoute
   '/_authenticated/console/apps/': typeof AuthenticatedConsoleAppsIndexRoute
@@ -1395,6 +1415,7 @@ export interface FileRouteTypes {
     | '/api/public/bluesky/client-metadata.json'
     | '/api/public/bluesky/start'
     | '/api/public/cron/check-dns'
+    | '/api/public/cron/cleanup-assets'
     | '/api/public/cron/purge-altcha'
     | '/api/public/cron/purge-shared-files'
     | '/api/public/cron/scan-transfers'
@@ -1410,6 +1431,7 @@ export interface FileRouteTypes {
     | '/api/public/session/logout'
     | '/api/public/sms/inbound'
     | '/api/public/spotify/callback'
+    | '/api/public/telegram/webhook'
     | '/api/public/weather-webhook/$token'
     | '/api/public/webhooks/banking'
     | '/console/apps/'
@@ -1529,6 +1551,7 @@ export interface FileRouteTypes {
     | '/api/public/bluesky/client-metadata.json'
     | '/api/public/bluesky/start'
     | '/api/public/cron/check-dns'
+    | '/api/public/cron/cleanup-assets'
     | '/api/public/cron/purge-altcha'
     | '/api/public/cron/purge-shared-files'
     | '/api/public/cron/scan-transfers'
@@ -1544,6 +1567,7 @@ export interface FileRouteTypes {
     | '/api/public/session/logout'
     | '/api/public/sms/inbound'
     | '/api/public/spotify/callback'
+    | '/api/public/telegram/webhook'
     | '/api/public/weather-webhook/$token'
     | '/api/public/webhooks/banking'
     | '/console/apps'
@@ -1668,6 +1692,7 @@ export interface FileRouteTypes {
     | '/api_/public/bluesky/client-metadata.json'
     | '/api_/public/bluesky/start'
     | '/api_/public/cron/check-dns'
+    | '/api_/public/cron/cleanup-assets'
     | '/api_/public/cron/purge-altcha'
     | '/api_/public/cron/purge-shared-files'
     | '/api_/public/cron/scan-transfers'
@@ -1683,6 +1708,7 @@ export interface FileRouteTypes {
     | '/api_/public/session/logout'
     | '/api_/public/sms/inbound'
     | '/api_/public/spotify/callback'
+    | '/api_/public/telegram/webhook'
     | '/api_/public/weather-webhook/$token'
     | '/api_/public/webhooks/banking'
     | '/_authenticated/console/apps/'
@@ -1773,6 +1799,7 @@ export interface RootRouteChildren {
   ApiPublicBlueskyClientMetadataDotjsonRoute: typeof ApiPublicBlueskyClientMetadataDotjsonRoute
   ApiPublicBlueskyStartRoute: typeof ApiPublicBlueskyStartRoute
   ApiPublicCronCheckDnsRoute: typeof ApiPublicCronCheckDnsRoute
+  ApiPublicCronCleanupAssetsRoute: typeof ApiPublicCronCleanupAssetsRoute
   ApiPublicCronPurgeAltchaRoute: typeof ApiPublicCronPurgeAltchaRoute
   ApiPublicCronPurgeSharedFilesRoute: typeof ApiPublicCronPurgeSharedFilesRoute
   ApiPublicCronScanTransfersRoute: typeof ApiPublicCronScanTransfersRoute
@@ -1788,6 +1815,7 @@ export interface RootRouteChildren {
   ApiPublicSessionLogoutRoute: typeof ApiPublicSessionLogoutRoute
   ApiPublicSmsInboundRoute: typeof ApiPublicSmsInboundRoute
   ApiPublicSpotifyCallbackRoute: typeof ApiPublicSpotifyCallbackRoute
+  ApiPublicTelegramWebhookRoute: typeof ApiPublicTelegramWebhookRoute
   ApiPublicWeatherWebhookTokenRoute: typeof ApiPublicWeatherWebhookTokenRoute
   ApiPublicWebhooksBankingRoute: typeof ApiPublicWebhooksBankingRoute
   ApiPublicBookingsIdActionRoute: typeof ApiPublicBookingsIdActionRoute
@@ -2537,6 +2565,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicCronCheckDnsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api_/public/cron/cleanup-assets': {
+      id: '/api_/public/cron/cleanup-assets'
+      path: '/api/public/cron/cleanup-assets'
+      fullPath: '/api/public/cron/cleanup-assets'
+      preLoaderRoute: typeof ApiPublicCronCleanupAssetsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api_/public/cron/purge-altcha': {
       id: '/api_/public/cron/purge-altcha'
       path: '/api/public/cron/purge-altcha'
@@ -2640,6 +2675,13 @@ declare module '@tanstack/react-router' {
       path: '/api/public/spotify/callback'
       fullPath: '/api/public/spotify/callback'
       preLoaderRoute: typeof ApiPublicSpotifyCallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api_/public/telegram/webhook': {
+      id: '/api_/public/telegram/webhook'
+      path: '/api/public/telegram/webhook'
+      fullPath: '/api/public/telegram/webhook'
+      preLoaderRoute: typeof ApiPublicTelegramWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api_/public/weather-webhook/$token': {
@@ -3041,6 +3083,7 @@ const rootRouteChildren: RootRouteChildren = {
     ApiPublicBlueskyClientMetadataDotjsonRoute,
   ApiPublicBlueskyStartRoute: ApiPublicBlueskyStartRoute,
   ApiPublicCronCheckDnsRoute: ApiPublicCronCheckDnsRoute,
+  ApiPublicCronCleanupAssetsRoute: ApiPublicCronCleanupAssetsRoute,
   ApiPublicCronPurgeAltchaRoute: ApiPublicCronPurgeAltchaRoute,
   ApiPublicCronPurgeSharedFilesRoute: ApiPublicCronPurgeSharedFilesRoute,
   ApiPublicCronScanTransfersRoute: ApiPublicCronScanTransfersRoute,
@@ -3056,6 +3099,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicSessionLogoutRoute: ApiPublicSessionLogoutRoute,
   ApiPublicSmsInboundRoute: ApiPublicSmsInboundRoute,
   ApiPublicSpotifyCallbackRoute: ApiPublicSpotifyCallbackRoute,
+  ApiPublicTelegramWebhookRoute: ApiPublicTelegramWebhookRoute,
   ApiPublicWeatherWebhookTokenRoute: ApiPublicWeatherWebhookTokenRoute,
   ApiPublicWebhooksBankingRoute: ApiPublicWebhooksBankingRoute,
   ApiPublicBookingsIdActionRoute: ApiPublicBookingsIdActionRoute,

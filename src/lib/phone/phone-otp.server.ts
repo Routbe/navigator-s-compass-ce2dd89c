@@ -142,3 +142,33 @@ export async function confirmInboundCode(fromPhone: string, text: string): Promi
       phone_last4 = excluded.phone_last4, phone_verified = true, phone_verified_at = now(), updated_at = now()`;
   return true;
 }
+
+export type PendingPhoneVerification = { id: string; masked: string; createdAt: string; attempts: number };
+
+/** Admin queue: open, unexpired phone codes (never exposes the number or code). */
+export async function listPendingPhoneVerifications(limit = 50): Promise<PendingPhoneVerification[]> {
+  await ensure();
+  const rows = (await sql`select id, phone_last4, created_at, attempts from public.phone_otp_codes
+    where consumed_at is null and expires_at > now() order by created_at desc limit ${limit}`) as Record<string, unknown>[];
+  return rows.map((r) => ({
+    id: String(r["id"]),
+    masked: maskPhone(String(r["phone_last4"])),
+    createdAt: new Date(String(r["created_at"])).toISOString(),
+    attempts: Number(r["attempts"]),
+  }));
+}
+
+/** Admin: consume an open code and mark the member's number verified. */
+export async function approvePhoneVerification(codeId: string): Promise<boolean> {
+  await ensure();
+  const rows = (await sql`update public.phone_otp_codes set consumed_at = now()
+    where id = ${codeId} and consumed_at is null and expires_at > now()
+    returning user_id, phone_number_enc, phone_hash, phone_last4`) as Record<string, unknown>[];
+  const row = rows[0];
+  if (!row) return false;
+  await sql`insert into public.user_phone_numbers (user_id, phone_number_enc, phone_hash, phone_last4, phone_verified, phone_verified_at)
+    values (${row["user_id"] as string}, ${row["phone_number_enc"] as string}, ${row["phone_hash"] as string}, ${row["phone_last4"] as string}, true, now())
+    on conflict (user_id) do update set phone_number_enc = excluded.phone_number_enc, phone_hash = excluded.phone_hash,
+      phone_last4 = excluded.phone_last4, phone_verified = true, phone_verified_at = now(), updated_at = now()`;
+  return true;
+}
