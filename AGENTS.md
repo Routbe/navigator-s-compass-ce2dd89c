@@ -29,3 +29,4 @@
 - Total reach is summed only from Connections Hub rows (`user_integrations`, db/74): open platforms auto-fetch, others use a per-integration manual count; never social_links or placeholders. Why: the number must reflect what the member actually connected.
 - Emailed action links (review, booking) only confirm on GET, change on POST; status mails send fire-and-forget. Why: scanners open links; mail failures never block actions.
 - 2FA/passkeys: Better Auth `twoFactor` + `@better-auth/passkey`, tables in `neon_auth` (db/77). Why: no custom crypto.
+- Uploaded user files are tracked in `user_assets` (db/80) with retention set server-side by `asset-retention.ts`; expired rows are purged by `/api/public/cron/cleanup-assets`. Why: storage never grows without an owner or an end date.
