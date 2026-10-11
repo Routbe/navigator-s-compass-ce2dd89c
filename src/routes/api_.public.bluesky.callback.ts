@@ -27,7 +27,14 @@ export const Route = createFileRoute("/api_/public/bluesky/callback")({
 
         if (failure || !code || !returnedState) {
           const message = failure ?? "De aanmelding bij Bluesky is afgebroken.";
-          return redirectTo("/auth/sign-in?error=provider_rejected", [clear]);
+          console.error("[bluesky] callback rejected", {
+            error: url.searchParams.get("error"),
+            error_description: url.searchParams.get("error_description"),
+            iss: url.searchParams.get("iss"),
+            hasCode: Boolean(code),
+            hasState: Boolean(returnedState),
+          });
+          return redirectTo(`/auth/sign-in?error=provider_rejected&bluesky_error=${encodeURIComponent(message)}`, [clear]);
         }
 
         try {
@@ -84,7 +91,8 @@ export const Route = createFileRoute("/api_/public/bluesky/callback")({
           ]);
         } catch (error) {
           console.error("[auth] bluesky callback failed", error);
-          return redirectTo("/auth/sign-in?error=provider_rejected", [clear]);
+          const message = error instanceof Error ? error.message : "Bluesky-login mislukte.";
+          return redirectTo(`/auth/sign-in?error=provider_rejected&bluesky_error=${encodeURIComponent(message)}`, [clear]);
         }
       },
     },

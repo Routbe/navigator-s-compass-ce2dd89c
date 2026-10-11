@@ -20,7 +20,12 @@ export const Route = createFileRoute("/api_/public/bluesky/start")({
             : canonicalAppUrl());
 
         try {
-          const { startBlueskyLogin, sealBlueskyState } = await import("@/lib/bluesky-auth.server");
+          const { startBlueskyLogin, sealBlueskyState, blueskyOriginProblem } = await import("@/lib/bluesky-auth.server");
+          const problem = blueskyOriginProblem(origin);
+          if (problem) {
+            console.warn(`[bluesky] login blocked: ${problem} (origin=${origin})`);
+            throw new Error(problem);
+          }
           const { url: authorizeUrl, state } = await startBlueskyLogin({ handle, origin, next });
           const sealed = await sealBlueskyState(state);
           const headers = new Headers({ location: authorizeUrl });
@@ -29,6 +34,7 @@ export const Route = createFileRoute("/api_/public/bluesky/start")({
           return new Response(null, { status: 302, headers });
         } catch (error) {
           const message = error instanceof Error ? error.message : "Bluesky-login mislukte.";
+          console.error("[bluesky] start failed", { origin, message });
           return new Response(null, {
             status: 302,
             headers: { location: `/auth/sign-in?bluesky_error=${encodeURIComponent(message)}` },

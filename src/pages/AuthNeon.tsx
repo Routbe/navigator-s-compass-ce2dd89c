@@ -211,7 +211,16 @@ export default function AuthNeon({ initialMode = "magic" }: { initialMode?: Mode
               ? `serverfout ${e.status}`
               : "");
         toast.error(reason ? `${name}: ${reason}` : t("auth.toast.failed"));
-      } else leaving = true;
+      } else {
+        const url = (result as { data?: { url?: string } } | undefined)?.data?.url;
+        if (url) {
+          leaving = true;
+          window.location.assign(url);
+        } else {
+          console.error(`[auth] ${provider} sign-in returned no authorization URL`, result);
+          toast.error(t("auth.toast.failed"));
+        }
+      }
     } catch (err) {
       toast.error(errorMessage(err, t("auth.toast.failed")));
     } finally {
