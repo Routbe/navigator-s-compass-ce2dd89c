@@ -271,6 +271,25 @@ export async function openBlueskyState(sealed: string): Promise<BlueskyState> {
 
 /* ----------------------------------------------------------------- flow */
 
+/**
+ * Bluesky servers must fetch our client-metadata.json over public HTTPS.
+ * Private preview hosts and localhost cannot be reached → explain instead of a vague rejection.
+ */
+export function blueskyOriginProblem(origin: string): string | null {
+  let host = "";
+  try {
+    const u = new URL(origin);
+    if (u.protocol !== "https:") return "Bluesky-login werkt alleen via een publiek https-adres.";
+    host = u.hostname;
+  } catch {
+    return "Het app-adres (NEXT_PUBLIC_APP_URL) is ongeldig.";
+  }
+  if (host === "localhost" || host.startsWith("id-preview--")) {
+    return "Bluesky-login werkt niet in de privé-preview: Bluesky kan ons client-metadata-bestand daar niet ophalen. Test op de gepubliceerde site.";
+  }
+  return null;
+}
+
 export function blueskyClientId(origin: string): string {
   return `${origin.replace(/\/$/, "")}/api/public/bluesky/client-metadata.json`;
 }
@@ -325,6 +344,13 @@ export async function startBlueskyLogin(input: {
         (par.body?.["error_description"] as string | undefined) ||
         (par.body?.["error"] as string | undefined) ||
         `HTTP ${par.res.status}`;
+      console.error("[bluesky] PAR rejected", {
+        status: par.res.status,
+        body: par.body,
+        client_id: blueskyClientId(input.origin),
+        redirect_uri: blueskyRedirectUri(input.origin),
+        endpoint: meta.pushed_authorization_request_endpoint,
+      });
       throw new BlueskyAuthError(`Bluesky weigerde de inlogaanvraag (${reason}).`);
     }
     requestUri = uri;
@@ -372,6 +398,12 @@ export async function completeBlueskyLogin(input: {
       (token.body?.["error_description"] as string | undefined) ||
       (token.body?.["error"] as string | undefined) ||
       `HTTP ${token.res.status}`;
+    console.error("[bluesky] token exchange failed", {
+      status: token.res.status,
+      body: token.body,
+      client_id: blueskyClientId(input.origin),
+      redirect_uri: blueskyRedirectUri(input.origin),
+    });
     throw new BlueskyAuthError(`Bluesky kon de aanmelding niet afronden (${reason}).`);
   }
   if (sub !== input.state.did) {
