@@ -12,10 +12,10 @@ export function buildMode(env: Record<string, string | undefined>): BuildMode {
 }
 
 /** Admin pages + raw admin API. */
-const ADMIN = String.raw`^(admin(\..+)?|api_?\.admin(\..+)?)$`;
+const ADMIN = String.raw`^(admin(?:\..+)?|api_?\.admin(?:\..+)?)$`;
 
 /** In admin mode keep only: shell, session gate, admin pages, sign-in and the few public endpoints it needs. */
-const ADMIN_KEEP = String.raw`^(?!(__root\.|_authenticated(\.|$)|admin(\.|$)|auth[._]|api_\.auth\.|api_\.public\.(auth|session|cron|health|avatar|proxy-image)\.)).+$`;
+const ADMIN_KEEP = String.raw`^(?!(?:__root\.tsx$|_authenticated(?:\.tsx)?$|admin(?:\.|$)|auth(?:\.tsx|\.index\.tsx|\.\$authView\.tsx|_\.continue\.ts)$|api_\.auth\.|api_\.public\.(?:auth\.providers|session\.logout|altcha|cron\.[\w-]+|health|avatar|proxy-image)\.ts$)).+`;
 
 export function routeIgnorePattern(mode: BuildMode): string | undefined {
   if (mode === "public") return ADMIN;

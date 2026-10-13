@@ -12,8 +12,11 @@ export type AppMode = "public" | "admin" | "all";
 const parse = (v: unknown): AppMode | null => (v === "public" || v === "admin" ? v : null);
 
 export function appMode(): AppMode {
+  const built = parse(import.meta.env["VITE_APP_MODE"]);
+  // A server override cannot reopen routes removed from a pinned client build.
+  if (built) return built;
   const server = typeof process !== "undefined" ? parse(process.env?.["APP_MODE"]) : null;
-  return server ?? parse(import.meta.env["VITE_APP_MODE"]) ?? "all";
+  return server ?? "all";
 }
 
 export const isAdminMode = () => appMode() === "admin";
@@ -28,9 +31,12 @@ export function isAdminPath(pathname: string): boolean {
 export function isAdminPortalPath(pathname: string): boolean {
   return (
     isAdminPath(pathname) ||
-    /^\/(auth|api\/auth|api_\/auth|_serverFn|assets|@(vite|fs|id|react-refresh)|src\/|node_modules\/|__)/.test(pathname) ||
-    /^\/api\/public\/(cron|altcha)/.test(pathname) ||
-    /\.(js|css|map|png|svg|ico|webmanifest|json|txt|woff2?)$/.test(pathname)
+    /^\/auth(?:\/(?:sign-in|continue))?\/?$/.test(pathname) ||
+    /^\/api_?\/auth(?:\/|$)/.test(pathname) ||
+    /^\/(?:_serverFn|assets|@(vite|fs|id|react-refresh)|src|node_modules|__)(?:\/|$)/.test(pathname) ||
+    /^\/api\/public\/(?:altcha|auth\/providers|session\/logout|health|avatar|proxy-image)(?:\/|$)/.test(pathname) ||
+    /^\/api\/public\/cron(?:\/|$)/.test(pathname) ||
+    /^\/(?:favicon\.(?:ico|png|svg)|apple-touch-icon\.png|icon-\d+\.png|manifest\.json|robots\.txt)$/.test(pathname)
   );
 }
 
