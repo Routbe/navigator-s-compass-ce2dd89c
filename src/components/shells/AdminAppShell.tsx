@@ -1,5 +1,4 @@
 import type { ReactNode } from "react";
-import { Link } from "@tanstack/react-router";
 import { ShieldAlert } from "lucide-react";
 import { PortalContext } from "@/components/layout/PortalContext";
 import { AdminFrame } from "@/components/admin/AdminFrame";
@@ -16,7 +15,7 @@ import { BrandLoader } from "@/components/BrandLoader";
  * Signed-out visitors fall through to the _authenticated sign-in redirect.
  */
 export default function AdminAppShell({ children }: { children: ReactNode }) {
-  const { user, loading } = useAuth();
+  const { user, loading, signOut } = useAuth();
   const { isAdmin, checking } = useIsAdmin();
   const path = useRouterState({ select: (s) => s.location.pathname });
   const protectedPage = isAdminPath(path);

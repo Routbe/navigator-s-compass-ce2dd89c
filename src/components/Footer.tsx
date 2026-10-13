@@ -54,7 +54,7 @@ export function Footer() {
   const { t } = useI18n();
   const location = useLocation();
   const pathname = location?.pathname ?? "";
-  const isAuthRoute = AUTH_ROUTES.has(pathname);
+  const isAuthRoute = AUTH_ROUTES.has(pathname) || pathname.startsWith("/auth/");
   // The admin portal is a dense working surface: the marketing footer is
   // replaced by a single compact line, and hidden entirely on small screens.
   const isAdminRoute = pathname === "/admin" || pathname.startsWith("/admin/");
@@ -165,13 +165,7 @@ export function Footer() {
 
         <div className="mt-10 flex flex-col items-center gap-2 border-t border-border/40 pt-5 text-center text-xs text-muted-foreground">
           <p>
-            <Link
-              to="/auth?redirect=/admin"
-              title="ROUT"
-              className="text-inherit no-underline hover:text-foreground"
-            >
-              © 2026 ROUT
-            </Link>{" "}
+            <span>© 2026 ROUT</span>{" "}
             • Open Source (AGPLv3) • Designed &amp; engineered by{" "}
             <a
               href="https://delplanche.cloud"

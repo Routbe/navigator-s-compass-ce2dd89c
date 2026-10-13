@@ -32,7 +32,7 @@ const AdminAppShell =
 
 function ShellSwitch({ children }: { children: ReactNode }) {
   const path = useRouterState({ select: (s) => s.location.pathname });
-  const Shell = AdminAppShell && isAdminPath(path) ? AdminAppShell : PublicAppShell;
+  const Shell = AdminAppShell && (isAdminMode() || isAdminPath(path)) ? AdminAppShell : PublicAppShell;
   return (
     <Suspense fallback={null}>
       <Shell>{children}</Shell>

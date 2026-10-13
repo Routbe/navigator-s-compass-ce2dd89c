@@ -5,7 +5,6 @@ import {
   LogOut,
   Settings,
   ChevronDown,
-  ShieldCheck,
   Sparkles,
   PanelsTopLeft,
 } from "lucide-react";
@@ -20,7 +19,7 @@ import { Button } from "@/components/ui/button";
 import { useRouterState } from "@tanstack/react-router";
 import { Link, useNavigate } from "@/lib/router-compat";
 import { useAuth } from "@/hooks/useAuth";
-import { useIsAdmin, clearAdminRoleCache } from "@/hooks/useIsAdmin";
+import { clearAdminRoleCache } from "@/hooks/useIsAdmin";
 import { UserAvatar } from "@/components/UserAvatar";
 import { getMyAccount } from "@/lib/account.functions";
 
@@ -38,7 +37,6 @@ export function ProfileMenu() {
   const [verified, setVerified] = useState(false);
   const [earlyBeliever, setEarlyBeliever] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
-  const { isAdmin } = useIsAdmin();
   const loadAccount = useServerFn(getMyAccount);
 
   const pathname = useRouterState({ select: (s) => s.location.pathname });
@@ -155,24 +153,7 @@ export function ProfileMenu() {
             </a>
           </DropdownMenuItem>
 
-          {isAdmin ? (
-            <>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                onClick={() => nav("/admin")}
-                className="gap-2"
-                data-testid="menu-admin"
-              >
-                <ShieldCheck className="h-4 w-4 shrink-0" aria-hidden /> Super Admin Portal
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => nav("/admin?tab=inbound")} className="gap-2">
-                <ShieldCheck className="h-4 w-4 shrink-0 opacity-0" aria-hidden /> Inbound payments
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => nav("/admin?tab=audit")} className="gap-2">
-                <ShieldCheck className="h-4 w-4 shrink-0 opacity-0" aria-hidden /> Audit log
-              </DropdownMenuItem>
-            </>
-          ) : null}
+
 
           <DropdownMenuSeparator />
           <DropdownMenuItem
