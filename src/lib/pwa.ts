@@ -9,9 +9,11 @@
  */
 
 const SW_URL = "/sw.js";
+import { isAdminMode } from "./app-mode";
 
 function isRefusedContext(): boolean {
   if (typeof window === "undefined") return true;
+  if (isAdminMode() || window.location.hostname === "rout.dlp.li") return true;
   if (!import.meta.env.PROD) return true;
   if (window.self !== window.top) return true;
 

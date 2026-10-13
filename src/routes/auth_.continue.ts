@@ -1,12 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
 import {
-  DEFAULT_DESTINATION,
+  postAuthDestination,
   NEXT_COOKIE,
   SIGN_IN_PATH,
   TOUR_DRAFT_COOKIE,
   cleanAuthError,
   safeNextPath,
 } from "@/lib/auth/post-auth";
+import { appMode } from "@/lib/app-mode";
 
 function readCookie(header: string | null, name: string): string | null {
   for (const part of (header ?? "").split(";")) {
@@ -48,9 +49,10 @@ export async function handlePostAuth(request: Request): Promise<Response> {
   const cookieHeader = request.headers.get("cookie");
   const draftToken = readCookie(cookieHeader, TOUR_DRAFT_COOKIE);
   let next = safeNextPath(readCookie(cookieHeader, NEXT_COOKIE)) ?? null;
+  const mode = appMode();
 
   // A pending tour draft is applied straight to a new account; existing members keep their profile.
-  if (draftToken) {
+  if (draftToken && mode !== "admin") {
     let result: "applied" | "handle_taken" | "skipped" = "handle_taken";
     try {
       const { readTourDraftByToken, upsertTourDraft, deleteTourDraftByToken, deleteTourDraft } =
@@ -74,7 +76,7 @@ export async function handlePostAuth(request: Request): Promise<Response> {
     else if (result === "applied") next = "/studio";
   }
 
-  return seeOther(next ?? DEFAULT_DESTINATION, draftToken ? [clearNext, clearDraft] : [clearNext]);
+  return seeOther(postAuthDestination(mode, next), draftToken ? [clearNext, clearDraft] : [clearNext]);
 }
 
 export const Route = createFileRoute("/auth_/continue")({

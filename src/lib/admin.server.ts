@@ -40,6 +40,8 @@ export async function resolveVipConsoleRole(userId: string): Promise<VipConsoleR
 
 /** Hard gate for every VIP panel server function. */
 export async function assertVipConsoleRole(userId: string): Promise<VipConsoleRole> {
+  const { isPublicMode } = await import("./app-mode");
+  if (isPublicMode()) throw new Error("Forbidden");
   const role = await resolveVipConsoleRole(userId);
   if (!role) throw new Error("Forbidden");
   return role;

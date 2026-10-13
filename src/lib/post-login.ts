@@ -1,6 +1,8 @@
 import { amIAdmin } from "@/lib/admin.functions";
 import { getMyHandle } from "@/lib/claim.functions";
 import { withAuthTimeout } from "@/lib/auth-timeout";
+import { appMode } from "./app-mode";
+import { postAuthDestination, safeNextPath } from "./auth/post-auth";
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
@@ -33,9 +35,11 @@ async function readHandleWithRetry(attempts = 3): Promise<string | null | undefi
  * everyone else lands on their dashboard.
  */
 export async function resolvePostLoginPath(explicitRedirect?: string | null): Promise<string> {
+  const mode = appMode();
+  if (mode === "admin") return postAuthDestination(mode, safeNextPath(explicitRedirect));
   try {
     const res = await withAuthTimeout(amIAdmin({}), "post-login:amIAdmin", 5_000);
-    if (res.isAdmin) {
+    if (res.isAdmin && mode === "all") {
       console.info("[post-login:destination] /admin");
       return "/admin";
     }
@@ -46,7 +50,7 @@ export async function resolvePostLoginPath(explicitRedirect?: string | null): Pr
   const handle = await readHandleWithRetry();
   if (handle) {
     const destination =
-      explicitRedirect && explicitRedirect !== "/claim" ? explicitRedirect : "/dashboard/routes";
+      explicitRedirect && explicitRedirect !== "/claim" ? postAuthDestination(mode, safeNextPath(explicitRedirect)) : "/dashboard/routes";
     console.info(`[post-login:destination] ${destination}`);
     return destination;
   }

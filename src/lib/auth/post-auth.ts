@@ -7,6 +7,13 @@ export const POST_AUTH_PATH = "/auth/continue";
 export const SIGN_IN_PATH = "/auth/sign-in";
 export const DEFAULT_DESTINATION = "/dashboard";
 
+/** A signed-in member never crosses deployment boundaries through a next cookie. */
+export function postAuthDestination(mode: "public" | "admin" | "all", next: string | null): string {
+  if (mode === "admin") return next && /^\/admin(?:\/|\?|$)/.test(next) ? next : "/admin";
+  if (mode === "public" && next && /^\/admin(?:\/|\?|$)/.test(next)) return DEFAULT_DESTINATION;
+  return next ?? DEFAULT_DESTINATION;
+}
+
 /** HttpOnly cookie holding the intended destination (path only). */
 export const NEXT_COOKIE = "rout_next";
 /** HttpOnly cookie holding the anonymous tour draft token. */
@@ -44,7 +51,7 @@ export function safeNextPath(raw: string | null | undefined): string | null {
     if (/^(token|code|state|error|success|draft)$/i.test(key)) params.delete(key);
   }
   const rest = params.toString();
-  return rest ? `${path}?${rest}` : path!;
+  return rest ? `${path}?${rest}` : (path ?? "/");
 }
 
 /** Map raw Better Auth / provider error strings to a clean public code. */
