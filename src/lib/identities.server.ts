@@ -47,14 +47,21 @@ async function betterAuthId(userId: string): Promise<string | null> {
   return (rows[0]?.["ba"] as string | null) ?? null;
 }
 
-type BaAccount = { id: string; providerId: string; accountId: string; createdAt: string };
+type BaAccount = {
+  id: string;
+  providerId: string;
+  accountId: string;
+  createdAt: string;
+  idToken: string | null;
+  accessToken: string | null;
+};
 
 async function listBetterAuth(userId: string): Promise<BaAccount[]> {
   const ba = await betterAuthId(userId);
   if (!ba) return [];
   try {
     const rows = (await sql`
-      select id, "providerId", "accountId", "createdAt"
+      select id, "providerId", "accountId", "createdAt", "idToken", "accessToken"
         from neon_auth.account where "userId" = ${ba}
     `) as Row[];
     return rows.map((r) => ({
@@ -62,22 +69,84 @@ async function listBetterAuth(userId: string): Promise<BaAccount[]> {
       providerId: String(r["providerId"]),
       accountId: String(r["accountId"]),
       createdAt: String(r["createdAt"]),
+      idToken: (r["idToken"] as string | null) ?? null,
+      accessToken: (r["accessToken"] as string | null) ?? null,
     }));
   } catch {
     return [];
   }
 }
 
+let labelsReady: Promise<void> | null = null;
+function ensureLabels() {
+  labelsReady ??= import("@/lib/db/schema-ensure.server").then(({ runSchemaEnsure }) =>
+    runSchemaEnsure(async () => {
+      await sql`create table if not exists public.identity_labels (
+        account_id text primary key, provider text not null, label text not null, updated_at timestamptz not null default now())`;
+    }, "identity-labels"),
+  );
+  return labelsReady;
+}
+
+/** Profiel ophalen met het opgeslagen access token (alleen providers zonder bruikbaar id_token). */
+async function fetchProfile(provider: string, accessToken: string): Promise<Record<string, unknown> | null> {
+  const urls: Record<string, string> = {
+    github: "https://api.github.com/user",
+    gitlab: `${(process.env["GITLAB_ISSUER"]?.trim() || "https://gitlab.com").replace(/\/+$/, "")}/api/v4/user`,
+    infomaniak: "https://login.infomaniak.com/oauth2/userinfo",
+  };
+  const url = urls[provider];
+  if (!url) return null;
+  try {
+    const res = await fetch(url, {
+      headers: { authorization: `Bearer ${accessToken}`, accept: "application/json", "user-agent": "ROUT" },
+      signal: AbortSignal.timeout(3000),
+    });
+    return res.ok ? ((await res.json()) as Record<string, unknown>) : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Leesbare naam per account: uit cache, anders uit id_token of provider-profiel (en cachen). */
+async function resolveLabels(accounts: BaAccount[]): Promise<Map<string, string>> {
+  const out = new Map<string, string>();
+  if (accounts.length === 0) return out;
+  await ensureLabels().catch(() => undefined);
+  try {
+    const ids = accounts.map((a) => a.id);
+    const rows = (await sql`select account_id, label from public.identity_labels where account_id = any(${ids})`) as Row[];
+    for (const r of rows) out.set(String(r["account_id"]), String(r["label"]));
+  } catch {
+    /* tabel nog niet gemigreerd: lui resolven zonder cache */
+  }
+  const { pickIdentityLabel, decodeJwtPayload } = await import("./identity-label");
+  await Promise.all(
+    accounts
+      .filter((a) => !out.has(a.id))
+      .map(async (a) => {
+        let label = pickIdentityLabel(a.providerId, decodeJwtPayload(a.idToken));
+        if (!label && a.accessToken) label = pickIdentityLabel(a.providerId, await fetchProfile(a.providerId, a.accessToken));
+        if (!label) return;
+        out.set(a.id, label);
+        await sql`insert into public.identity_labels (account_id, provider, label) values (${a.id}, ${a.providerId}, ${label})
+          on conflict (account_id) do update set label = excluded.label, updated_at = now()`.catch(() => undefined);
+      }),
+  );
+  return out;
+}
+
 export async function listIdentities(userId: string): Promise<IdentityRow[]> {
   const [fedi, ba] = await Promise.all([listFediverse(userId), listBetterAuth(userId)]);
+  const labels = await resolveLabels(ba.filter((a) => a.providerId !== "credential"));
   const social = ba
     .filter((a) => a.providerId !== "credential")
     .map((a) => ({
       id: `ba:${a.id}`,
       provider: a.providerId,
       providerAccountId: a.accountId,
-      email: null,
-      displayName: null,
+      email: labels.get(a.id)?.includes("@") && !labels.get(a.id)!.startsWith("@") ? labels.get(a.id)! : null,
+      displayName: labels.get(a.id) ?? null,
       avatarUrl: null,
       createdAt: a.createdAt,
     }));

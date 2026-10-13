@@ -11,7 +11,13 @@ async function handle(request: Request) {
     (request.headers.get("authorization") ?? "").replace(/^Bearer\s+/i, "");
   if (provided !== secret) return new Response("Unauthorized", { status: 401 });
   const { purgeExpiredAssets } = await import("@/lib/assets.server");
-  return Response.json(await purgeExpiredAssets());
+  const { purgeExpiredSharedFiles } = await import("@/lib/storage/shared-files.server");
+  // Each purge is fail-safe per object; one failing source never blocks the other.
+  const [assets, sharedFiles] = await Promise.allSettled([purgeExpiredAssets(), purgeExpiredSharedFiles()]);
+  return Response.json({
+    assets: assets.status === "fulfilled" ? assets.value : { error: true },
+    sharedFiles: sharedFiles.status === "fulfilled" ? sharedFiles.value : { error: true },
+  });
 }
 
 export const Route = createFileRoute("/api_/public/cron/cleanup-assets")({

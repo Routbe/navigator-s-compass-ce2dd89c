@@ -1,5 +1,6 @@
 /** Browser-safe validation + routing rules for the Connections Hub. */
 import { integrationById } from "./integrations-catalog";
+import { normalizeFeed, normalizeMastodon } from "./open-web-rules";
 
 export type Audience = "pro" | "social" | "both";
 export const AUDIENCES: Audience[] = ["pro", "social", "both"];
@@ -20,12 +21,21 @@ export function normalizeIntegrationValue(provider: string, raw: string): string
       const h = v.replace(/^@/, "").replace(/^https?:\/\/[^/]+\//, "").replace(/\/.*$/, "");
       return USER.test(h) ? h : null;
     }
+    case "chesscom":
+    case "lichess": {
+      const h = v.replace(/^@/, "").replace(/^https?:\/\/(www\.)?(chess\.com\/member|lichess\.org\/@)\//i, "").replace(/\/.*$/, "");
+      return /^[A-Za-z0-9][A-Za-z0-9_-]{1,29}$/.test(h) ? h : null;
+    }
     case "bluesky":
     case "wsocial": {
       let h = v.toLowerCase().replace(/^@/, "").replace(/^https?:\/\/(www\.)?(bsky\.app|wsocial\.eu)\/profile\//, "").replace(/\/.*$/, "");
       if (!h.includes(".")) h = `${h}.${provider === "bluesky" ? "bsky.social" : "wsocial.eu"}`;
       return AT_HANDLE.test(h) ? h : null;
     }
+    case "mastodon":
+      return normalizeMastodon(v);
+    case "rss":
+      return normalizeFeed(v);
     case "youtube": {
       const h = v.replace(/^https?:\/\/(www\.)?youtube\.com\//, "").replace(/^channel\//, "").replace(/\/.*$/, "");
       if (/^UC[A-Za-z0-9_-]{22}$/.test(h)) return h;

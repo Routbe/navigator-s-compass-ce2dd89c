@@ -49,3 +49,33 @@ export const removeIntegration = createServerFn({ method: "POST" })
     await s.removeMine(context.userId, data.provider);
     return { ok: true };
   });
+
+const verifySchema = z.object({ provider: z.enum(["bluesky", "wsocial", "mastodon", "github"]) });
+
+/** Bio-check step 1: issue a temporary code for the caller's own connection. */
+export const startIntegrationVerify = createServerFn({ method: "POST" })
+  .middleware([requireAuth])
+  .inputValidator((input: unknown) => verifySchema.parse(input))
+  .handler(async ({ data, context }) => {
+    const s = await import("./integrations.server");
+    try {
+      return { ok: true as const, code: await s.startBioVerify(context.userId, data.provider) };
+    } catch (e) {
+      console.error("[integrations] verify start failed", e instanceof Error ? e.message : e);
+      return { ok: false as const, code: null };
+    }
+  });
+
+/** Bio-check step 2: read the live public bio and mark verified when the code is present. */
+export const checkIntegrationVerify = createServerFn({ method: "POST" })
+  .middleware([requireAuth])
+  .inputValidator((input: unknown) => verifySchema.parse(input))
+  .handler(async ({ data, context }) => {
+    const s = await import("./integrations.server");
+    try {
+      return { result: await s.checkBioVerify(context.userId, data.provider) };
+    } catch (e) {
+      console.error("[integrations] verify check failed", e instanceof Error ? e.message : e);
+      return { result: "unreachable" as const };
+    }
+  });

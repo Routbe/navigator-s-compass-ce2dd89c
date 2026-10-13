@@ -35,3 +35,4 @@ function HomeRoute() {
   if (hostHandle) return <HostProfile handle={hostHandle} />;
   return <Page />;
 }
+

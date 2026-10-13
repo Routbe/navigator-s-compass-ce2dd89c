@@ -1,4 +1,5 @@
 import { routHandleClaim } from "./handle-sync";
+import { cleanRedirectUri, findMatchingRedirect, normalizeRedirectUri, redirectUrisMatch } from "./redirect-match";
 import { runSchemaEnsure } from "@/lib/db/schema-ensure.server";
 /**
  * "Login met ROUT" — native OAuth 2.1 / OIDC provider.
@@ -96,9 +97,9 @@ export async function sha256Base64Url(value: string): Promise<string> {
   return base64url(new Uint8Array(digest));
 }
 
-/** Exacte, letterlijke vergelijking van een redirect-URI tegen de whitelist. */
+/** Genormaliseerde (maar strikte) vergelijking tegen de whitelist — zie redirect-match.ts. */
 export function redirectAllowed(client: OAuthClient, redirectUri: string): boolean {
-  return client.redirectUris.some((uri) => uri === redirectUri);
+  return findMatchingRedirect(client.redirectUris, redirectUri) !== null;
 }
 
 /** Alleen https in productie; http uitsluitend voor localhost-ontwikkeling. */
@@ -114,7 +115,9 @@ export function isValidRedirectUri(value: string): boolean {
 }
 
 export function issuer(): string {
-  return (process.env["NEXT_PUBLIC_APP_URL"] || canonicalAppUrl()).replace(/\/$/, "");
+  // Altijd absoluut (schema + host, zonder afsluitende /) zodat OIDC-clients zoals Keycloak geldige URL's bouwen.
+  const raw = (process.env["NEXT_PUBLIC_APP_URL"] || canonicalAppUrl()).trim().replace(/\/+$/, "");
+  return /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
 }
 
 let tablesReady = false;
@@ -276,7 +279,16 @@ export type ClientInput = {
 };
 
 function sanitize(input: ClientInput) {
-  const uris = [...new Set(input.redirectUris.map((u) => u.trim()).filter(Boolean))];
+  // Opschonen + dedupliceren op genormaliseerde vorm (spaties, onzichtbare tekens, geëncodeerde plak).
+  const seen = new Set<string>();
+  const uris = input.redirectUris
+    .map((u) => cleanRedirectUri(u))
+    .filter((u) => {
+      const key = normalizeRedirectUri(u) ?? u;
+      if (!u || seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
   const bad = uris.find((u) => !isValidRedirectUri(u));
   if (bad) throw new OAuthError("invalid_redirect_uri", `Ongeldige redirect-URI: ${bad}`);
   const scopes = [...new Set(input.scopes.filter((s) => SUPPORTED_SCOPES.includes(s as Scope)))];
@@ -425,14 +437,20 @@ export async function removeTestUser(ownerUserId: string, id: string, identifier
     where client_id = ${clientId} and identifier = ${identifier.toLowerCase()}`;
 }
 
+/** First-party platform clients (no owner, e.g. `rout_native_self`) are never in test mode. */
+export const SYSTEM_CLIENT_IDS = new Set(["rout_native_self"]);
+
 /** Testing-modus: enkel eigenaar en testgebruikers (e-mail of handle) mogen inloggen. */
 export async function userMayUseClient(
   client: OAuthClient,
   user: { id: string; email: string },
 ): Promise<boolean> {
   if (client.publishingStatus === "production") return true;
+  if (SYSTEM_CLIENT_IDS.has(client.clientId)) return true;
   const owner = (await sql`select owner_user_id from public.oauth_clients
     where client_id = ${client.clientId} limit 1`) as Row[];
+  // Platform login (owner null) is ROUT's own sign-in, not a developer app.
+  if (owner[0] && owner[0]["owner_user_id"] == null) return true;
   if (String(owner[0]?.["owner_user_id"]) === user.id) return true;
   let handles: Row[] = [];
   try {
@@ -690,7 +708,10 @@ export async function exchangeAuthorizationCode(input: {
   if (String(row["client_id"]) !== input.clientId) {
     throw new OAuthError("invalid_grant", "Deze code hoort bij een andere app.");
   }
-  if (String(row["redirect_uri"]) !== input.redirectUri) {
+  if (!redirectUrisMatch(String(row["redirect_uri"]), input.redirectUri)) {
+    console.error(
+      `[OIDC Token] redirect_uri mismatch for client ${input.clientId}. Authorize used: ${JSON.stringify(String(row["redirect_uri"]))} | Token request: ${JSON.stringify(input.redirectUri)}`,
+    );
     throw new OAuthError("invalid_grant", "De redirect-URI komt niet overeen.");
   }
   const storedChallenge = String(row["code_challenge"] ?? "");
@@ -775,18 +796,42 @@ export async function identityClaims(
   }
   if (scopes.includes("linked_accounts")) {
     // Alleen dienst + account-ID: genoeg om dubbele accounts bij de app te voorkomen.
-    try {
-      const linked = (await sql`select provider, provider_account_id from public.user_identities
-        where user_id = ${userId} order by provider, created_at`) as Row[];
-      claims["linked_accounts"] = linked.map((l) => ({
-        provider: l["provider"],
-        account_id: l["provider_account_id"],
-      }));
-    } catch {
-      claims["linked_accounts"] = [];
-    }
+    claims["linked_accounts"] = await linkedAccountsOf(userId);
   }
   return claims;
+}
+
+/** Social sign-ins on this member: Better Auth accounts + fediverse identities. Never tokens. */
+export async function linkedAccountsOf(
+  userId: string,
+): Promise<Array<{ provider: string; account_id: string }>> {
+  const out: Array<{ provider: string; account_id: string }> = [];
+  const seen = new Set<string>();
+  const add = (provider: unknown, id: unknown) => {
+    const p = String(provider ?? "").toLowerCase();
+    const a = String(id ?? "");
+    if (!p || !a || p === "credential" || p === "email") return;
+    const key = `${p}:${a}`;
+    if (seen.has(key)) return;
+    seen.add(key);
+    out.push({ provider: p, account_id: a });
+  };
+  try {
+    const ba = (await sql`select a."providerId" as p, a."accountId" as a
+      from public.users u join neon_auth.account a on a."userId"::text = u.user_metadata->>'neon_auth_id'
+      where u.id = ${userId} order by a."createdAt"`) as Row[];
+    ba.forEach((r) => add(r["p"], r["a"]));
+  } catch (e) {
+    console.warn("[oauth] linked accounts (auth) skipped:", (e as Error).message);
+  }
+  try {
+    const fedi = (await sql`select provider, provider_account_id from public.user_identities
+      where user_id = ${userId} order by provider, created_at`) as Row[];
+    fedi.forEach((r) => add(r["provider"], r["provider_account_id"]));
+  } catch {
+    /* optional table */
+  }
+  return out;
 }
 
 /* ----------------------------------------------------- toegang & userinfo */

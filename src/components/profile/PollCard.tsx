@@ -9,12 +9,17 @@ const VOTER_STORAGE_KEY = "rout:poll-voter";
 /** Anonieme, stabiele stemmer-id in localStorage (geen login nodig). */
 function voterKey(): string {
   if (typeof window === "undefined") return "";
+  try {
   let key = window.localStorage.getItem(VOTER_STORAGE_KEY);
   if (!key) {
     key = `v_${Math.random().toString(36).slice(2)}${Date.now().toString(36)}`;
     window.localStorage.setItem(VOTER_STORAGE_KEY, key);
   }
   return key;
+  } catch {
+    // Opera/Brave strict modes can block storage; fall back to a per-session id.
+    return `v_${Math.random().toString(36).slice(2)}`;
+  }
 }
 
 /** Publieke poll: klik om te stemmen, daarna live percentages. */

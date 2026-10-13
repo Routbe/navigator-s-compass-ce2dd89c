@@ -7,7 +7,9 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
-import { useEffect, type ReactNode } from "react";
+import { lazy, Suspense, useEffect, type ReactNode } from "react";
+import { useRouterState } from "@tanstack/react-router";
+import { DevModeToggle } from "@/components/DevModeToggle";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
@@ -20,6 +22,23 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { LanguageSync } from "@/components/LanguageSync";
 import "@/lib/env";
+import { notFound, redirect } from "@tanstack/react-router";
+import { appMode, detectShellMode, isAdminMode, isAdminPath, isModeFixed, modeDecision } from "@/lib/app-mode";
+
+// Shells load lazily; the public build statically drops the admin shell (dead branch), so no admin code leaks.
+const PublicAppShell = lazy(() => import("@/components/shells/PublicAppShell"));
+const AdminAppShell =
+  import.meta.env["VITE_APP_MODE"] === "public" ? null : lazy(() => import("@/components/shells/AdminAppShell"));
+
+function ShellSwitch({ children }: { children: ReactNode }) {
+  const path = useRouterState({ select: (s) => s.location.pathname });
+  const Shell = AdminAppShell && isAdminPath(path) ? AdminAppShell : PublicAppShell;
+  return (
+    <Suspense fallback={null}>
+      <Shell>{children}</Shell>
+    </Suspense>
+  );
+}
 
 function NotFoundComponent() {
   return (
@@ -82,8 +101,15 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
 }
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
+  // Same split-brain decision as the server middleware, so client navigation obeys it too.
+  beforeLoad: ({ location }) => {
+    const d = modeDecision(appMode(), location.pathname);
+    if (d.kind === "notFound") throw notFound();
+    if (d.kind === "redirect") throw redirect({ href: d.to });
+  },
   head: () => ({
     meta: [
+      ...(isAdminMode() ? [{ name: "robots", content: "noindex, nofollow" }] : []),
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "ROUT — QR-codes en korte links met karakter" },
@@ -154,13 +180,18 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const router = useRouter();
 
   useEffect(() => {
     void import("@/lib/pwa").then((m) => m.setupPwa());
     // `?ref=` op elke entree onthouden (30 dagen), zodat de attributie
     // overleeft terwijl de bezoeker rondkijkt vóór registratie.
     void import("@/lib/referral").then((m) => m.captureReferralFromUrl());
-  }, []);
+    // Preview/dev: a chosen admin shell opens the portal from the home page.
+    if (!isModeFixed() && window.location.pathname === "/" && detectShellMode() === "admin") {
+      void router.navigate({ to: "/admin" } as never);
+    }
+  }, [router]);
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -173,7 +204,10 @@ function RootComponent() {
               <LanguageSync />
               <ErrorBoundary>
                   {/* Required: nested routes render here. */}
-                  <Outlet />
+                  <ShellSwitch>
+                    <Outlet />
+                  </ShellSwitch>
+                  <DevModeToggle />
               </ErrorBoundary>
             </AuthProvider>
           </TooltipProvider>

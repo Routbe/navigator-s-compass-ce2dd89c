@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { cleanRedirectUri } from "./redirect-match";
 
 /**
  * Strict Zod schemas for every Developer Console input. Shared by the server
@@ -26,8 +27,9 @@ export const optionalHttpsUrl = z
 
 export const redirectUriSchema = z
   .string()
-  .trim()
-  .max(300)
+  .max(2000)
+  .transform((v) => cleanRedirectUri(v))
+  .pipe(z.string().min(1).max(1000))
   .refine((v) => {
     try {
       const u = new URL(v);

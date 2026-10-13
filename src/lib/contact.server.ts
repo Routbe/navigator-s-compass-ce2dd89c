@@ -147,6 +147,8 @@ export function isKchatConfigured(): boolean {
 export async function notifyKchat(payload: ContactPayload): Promise<void> {
   const webhook = kchatWebhook();
   if (!webhook) throw new Error("KCHAT_WEBHOOK_URL is not configured");
+  const { recordOutboundWebhook } = await import("./webhook-transport.server");
+  let receivedResponse = false;
 
   try {
     const response = await fetch(webhook, {
@@ -158,12 +160,15 @@ export async function notifyKchat(payload: ContactPayload): Promise<void> {
       }),
     });
 
+    receivedResponse = true;
+    await recordOutboundWebhook("kchat", "contact_notification", response.status);
     if (!response.ok) {
       const detail = await response.text().catch(() => "");
       console.error(`[kchat] webhook failed [${response.status}]: ${detail.slice(0, 300)}`);
       throw new Error(`KChat webhook failed [${response.status}]: ${detail.slice(0, 300)}`);
     }
   } catch (error) {
+    if (!receivedResponse) await recordOutboundWebhook("kchat", "contact_notification", null);
     console.error("[kchat] webhook threw:", error instanceof Error ? error.message : error);
     throw error;
   }

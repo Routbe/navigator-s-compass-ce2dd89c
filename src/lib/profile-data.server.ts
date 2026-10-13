@@ -114,6 +114,11 @@ export async function writeProfileSettings(userId: string, input: ProfileSetting
     }
   }
 
+  // A verified real name is immutable and always wins over submitted names.
+  const { lockedRealName } = await import("./identity/identity.server");
+  const locked = await lockedRealName(userId).catch(() => null);
+  if (locked) input = { ...input, displayName: locked };
+
   try {
     await sql`
       update public.profiles
