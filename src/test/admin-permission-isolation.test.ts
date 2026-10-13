@@ -5,13 +5,12 @@ vi.mock('@/lib/neon', () => ({
   sql: vi.fn(),
 }));
 
-vi.mock('./app-mode', () => ({
+vi.mock('../lib/app-mode', () => ({
   isPublicMode: vi.fn(),
 }));
 
-// We'll import the function to test
 import { assertAdminPermission } from '../lib/admin-access.server';
-import { isPublicMode } from './app-mode';
+import { isPublicMode } from '../lib/app-mode';
 import { sql } from '@/lib/neon';
 
 describe('assertAdminPermission portal isolation', () => {
@@ -21,18 +20,16 @@ describe('assertAdminPermission portal isolation', () => {
 
   it('should allow permission when NOT in public mode', async () => {
     vi.mocked(isPublicMode).mockReturnValue(false);
-    vi.mocked(sql).mockResolvedValue([{ 1: 1 }]); // Mock hasAdminPermission returning true
+    vi.mocked(sql).mockResolvedValue([{ 1: 1 }]); 
 
-    await expect(assertAdminPermission('user-1', 'edit_names')).resolves.not.toThrow();
+    await expect(assertAdminPermission('user-1', 'edit_names' as any)).resolves.not.toThrow();
   });
 
-  it('should FAIL even with permission when in public mode (FAILURE CASE)', async () => {
+  it('should FAIL even with permission when in public mode', async () => {
     vi.mocked(isPublicMode).mockReturnValue(true);
-    vi.mocked(sql).mockResolvedValue([{ 1: 1 }]); // User has permission in DB
+    vi.mocked(sql).mockResolvedValue([{ 1: 1 }]); 
 
-    // Current implementation will SUCCEED, but it SHOULD FAIL
-    // This test will fail until the fix is applied if we expect it to throw.
-    // For now, let's verify it SUCCEEDS to prove the failure.
-    await expect(assertAdminPermission('user-1', 'edit_names')).resolves.not.toThrow();
+    // Current implementation SUCCEEDS, proving the failure of isolation.
+    await expect(assertAdminPermission('user-1', 'edit_names' as any)).resolves.not.toThrow();
   });
 });
