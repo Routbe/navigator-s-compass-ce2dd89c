@@ -1,35 +1,26 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from "vitest";
+const mocks = vi.hoisted(() => ({ publicMode: vi.fn(), sql: vi.fn() }));
+vi.mock("@/lib/app-mode", () => ({ isPublicMode: mocks.publicMode }));
+vi.mock("@/lib/neon", () => ({ sql: mocks.sql }));
+vi.mock("@/lib/brevo/client", () => ({ sendVerificationApproved: vi.fn(), sendVerificationRejected: vi.fn() }));
+import { assertAdminPermission } from "@/lib/admin-access.server";
+import { assertVipConsoleRole } from "@/lib/admin.server";
 
-// Mock dependencies
-vi.mock('@/lib/neon', () => ({
-  sql: vi.fn(),
-}));
-
-vi.mock('../lib/app-mode', () => ({
-  isPublicMode: vi.fn(),
-}));
-
-import { assertAdminPermission } from '../lib/admin-access.server';
-import { isPublicMode } from '../lib/app-mode';
-import { sql } from '@/lib/neon';
-
-describe('assertAdminPermission portal isolation', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
+describe("administrative RPC deployment boundary", () => {
+  beforeEach(() => { vi.resetAllMocks(); });
+  it("public deployment refuses delegated permissions before any database query", async () => {
+    mocks.publicMode.mockReturnValue(true);
+    await expect(assertAdminPermission("admin", "manage_admins")).rejects.toThrow("forbidden");
+    expect(mocks.sql).not.toHaveBeenCalled();
   });
-
-  it('should allow permission when NOT in public mode', async () => {
-    vi.mocked(isPublicMode).mockReturnValue(false);
-    vi.mocked(sql).mockResolvedValue([{ 1: 1 }]); 
-
-    await expect(assertAdminPermission('user-1', 'edit_names' as any)).resolves.not.toThrow();
+  it("public deployment refuses VIP administration before any database query", async () => {
+    mocks.publicMode.mockReturnValue(true);
+    await expect(assertVipConsoleRole("admin")).rejects.toThrow("Forbidden");
+    expect(mocks.sql).not.toHaveBeenCalled();
   });
-
-  it('should FAIL even with permission when in public mode', async () => {
-    vi.mocked(isPublicMode).mockReturnValue(true);
-    vi.mocked(sql).mockResolvedValue([{ 1: 1 }]); 
-
-    // Current implementation SUCCEEDS, proving the failure of isolation.
-    await expect(assertAdminPermission('user-1', 'edit_names' as any)).resolves.not.toThrow();
+  it("admin deployment retains the existing database role check", async () => {
+    mocks.publicMode.mockReturnValue(false); mocks.sql.mockResolvedValue([]);
+    await expect(assertAdminPermission("member", "manage_admins")).rejects.toThrow("forbidden");
+    expect(mocks.sql).toHaveBeenCalled();
   });
 });

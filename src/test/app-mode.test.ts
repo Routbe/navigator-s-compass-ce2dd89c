@@ -1,5 +1,6 @@
-import { describe, expect, it } from "vitest";
-import { modeDecision, socialLoginAllowed } from "@/lib/app-mode";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { appMode, modeDecision, socialLoginAllowed } from "@/lib/app-mode";
+afterEach(() => { vi.unstubAllEnvs(); });
 
 describe("app mode split", () => {
   it("public mode returns 404 for admin pages and admin API", () => {
@@ -19,5 +20,16 @@ describe("app mode split", () => {
   it("admin mode refuses social login", () => {
     expect(socialLoginAllowed("admin")).toBe(false);
     expect(socialLoginAllowed("public")).toBe(true);
+  });
+  it("admin sign-in can read provider status and clear the session", () => {
+    expect(modeDecision("admin", "/api/public/auth/providers")).toEqual({ kind: "allow" });
+    expect(modeDecision("admin", "/api/public/session/logout")).toEqual({ kind: "allow" });
+  });
+  it("admin rejects registration, public OAuth and extension bypasses", () => {
+    for (const path of ["/auth/sign-up", "/auth/bluesky", "/api/public/oauth/token", "/api/public/users.json", "/authentication", "/api/public/cronology"]) expect(modeDecision("admin", path).kind).toBe("redirect");
+  });
+  it("a pinned public build cannot be reopened by a server override", () => {
+    vi.stubEnv("VITE_APP_MODE", "public"); vi.stubEnv("APP_MODE", "admin");
+    expect(appMode()).toBe("public");
   });
 });
