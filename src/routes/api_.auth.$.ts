@@ -10,8 +10,6 @@ import { createFileRoute } from "@tanstack/react-router";
 
 /** POST endpoints where the provider id travels in the JSON body. */
 const SOCIAL_BODY_PATHS = new Set(["/sign-in/social", "/sign-in/oauth2", "/link-social", "/oauth2/link"]);
-/** Linking (signed-in member attaches a provider) vs. signing in. */
-const LINK_PATHS = new Set(["/link-social", "/oauth2/link"]);
 /** Callback errors that just mean "second/stale hit of the same callback". */
 const STALE_CALLBACK_ERRORS = new Set(["state_mismatch", "please_restart_the_process", "invalid_code", "state_not_found"]);
 
@@ -105,26 +103,20 @@ export async function handleAuthRequest({ request }: { request: Request }) {
       ? pathname.slice("/api/auth".length) || "/"
       : pathname;
     const provider = (await providerFromBody(request, relativePath)) ?? providerFromPath(relativePath);
+    // Zero-trust admin portal: social/OAuth sign-in is refused server-side.
+    const { appMode, socialLoginAllowed } = await import("@/lib/app-mode");
+    if (provider && !socialLoginAllowed(appMode())) {
+      return Response.json(
+        { code: "social_login_disabled", message: "Sociale logins zijn uitgeschakeld op het beheerportaal." },
+        { status: 403, headers: { "cache-control": "no-store" } },
+      );
+    }
     if (provider && !isProviderConfigured(provider)) {
       return providerNotConfigured(provider, missingProviderKeys(provider));
     }
 
     if (provider === "gitlab" && SOCIAL_BODY_PATHS.has(relativePath)) {
-      const { canonicalAuthOrigin, gitlabRedirectUri } = await import("@/lib/better-auth.server");
-      const target = new URL(gitlabRedirectUri()).host;
-      const host = request.headers.get("x-forwarded-host")?.split(",")[0]?.trim() || request.headers.get("host") || "";
-      const local = /^(localhost|127\.0\.0\.1)(:\d+)?$/.test(host);
-      if (host && !local && host !== target) {
-        // State cookie lives on the request host; GitLab returns to the canonical
-        // host. Start the flow there instead of failing with state_mismatch.
-        console.warn(`[auth] gitlab sign-in on ${host}; sending to ${canonicalAuthOrigin()}`);
-        // Linking needs the member's session on the canonical host too.
-        const dest = LINK_PATHS.has(relativePath) ? "/settings?tab=identities" : "/auth";
-        return Response.json(
-          { url: `${canonicalAuthOrigin()}${dest}`, redirect: true },
-          { headers: { "cache-control": "no-store" } },
-        );
-      }
+      const { gitlabRedirectUri } = await import("@/lib/better-auth.server");
       console.info(`[auth] gitlab redirect_uri=${gitlabRedirectUri()}`);
     }
 

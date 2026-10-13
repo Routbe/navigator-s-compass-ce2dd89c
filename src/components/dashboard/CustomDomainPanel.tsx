@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { AtSign, CheckCircle2, Clock, Globe, Loader2, RefreshCw, Trash2 } from "lucide-react";
+import { AlertTriangle, AtSign, CheckCircle2, Clock, Copy, Globe, Loader2, RefreshCw, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,6 +13,13 @@ import {
   verifyCustomDomain,
   claimDomainAsHandle,
 } from "@/lib/domains.functions";
+
+const STATUS_LABEL: Record<string, string> = {
+  pending: "Bezig",
+  pointing: "TXT gevonden",
+  verified: "Geslaagd",
+  error: "Fout",
+};
 
 interface DomainRow {
   id: string;
@@ -45,6 +52,30 @@ export function CustomDomainPanel() {
   useEffect(() => {
     void refresh();
   }, [refresh]);
+
+  // Live DNS-status: elke 15s stil opnieuw controleren zolang een domein niet geverifieerd is.
+  const pendingIds = rows.filter((r) => r.status !== "verified").map((r) => r.id).join(",");
+  useEffect(() => {
+    if (!pendingIds) return;
+    const timer = window.setInterval(async () => {
+      for (const id of pendingIds.split(",")) {
+        try {
+          await verifyCustomDomain({ data: { id } });
+        } catch {
+          /* volgende poging */
+        }
+      }
+      void refresh();
+    }, 15000);
+    return () => window.clearInterval(timer);
+  }, [pendingIds, refresh]);
+
+  function copy(value: string) {
+    void navigator.clipboard?.writeText(value).then(
+      () => toast.success("Gekopieerd"),
+      () => toast.error("Kopiëren mislukt"),
+    );
+  }
 
   async function add() {
     const value = domain.trim().toLowerCase();
@@ -153,15 +184,17 @@ export function CustomDomainPanel() {
             >
               <span className="min-w-0 flex-1 truncate font-mono text-xs">{row.domain}</span>
               <Badge
-                variant={row.status === "verified" ? "default" : "secondary"}
+                variant={row.status === "verified" ? "default" : row.status === "error" ? "destructive" : "secondary"}
                 className="gap-1"
               >
                 {row.status === "verified" ? (
                   <CheckCircle2 className="h-3 w-3" aria-hidden />
+                ) : row.status === "error" ? (
+                  <AlertTriangle className="h-3 w-3" aria-hidden />
                 ) : (
                   <Clock className="h-3 w-3" aria-hidden />
                 )}
-                {row.status}
+                {STATUS_LABEL[row.status] ?? row.status}
               </Badge>
               <Button
                 type="button"
@@ -195,6 +228,28 @@ export function CustomDomainPanel() {
               >
                 <Trash2 className="h-3.5 w-3.5" aria-hidden />
               </Button>
+              {row.status !== "verified" && (
+                <div className="w-full space-y-1.5 rounded-md bg-muted p-2 text-xs">
+                  <p className="text-muted-foreground">Maak deze records aan bij je domeinregistrar:</p>
+                  {[
+                    { type: "TXT", name: `_rout.${row.domain}`, value: `rout-verify=${row.verification_token}` },
+                    { type: "CNAME", name: row.domain, value: DOMAIN_CNAME_TARGET },
+                  ].map((rec) => (
+                    <div key={rec.type} className="grid grid-cols-[3.5rem_1fr_auto] items-center gap-2">
+                      <span className="font-semibold">{rec.type}</span>
+                      <span className="min-w-0 break-all font-mono">
+                        {rec.name} → {rec.value}
+                      </span>
+                      <Button type="button" size="icon" variant="ghost" className="h-6 w-6" onClick={() => copy(rec.value)} aria-label={`Kopieer ${rec.type}-waarde`}>
+                        <Copy className="h-3 w-3" aria-hidden />
+                      </Button>
+                    </div>
+                  ))}
+                  <p className="flex items-center gap-1 text-muted-foreground">
+                    <Loader2 className="h-3 w-3 animate-spin" aria-hidden /> We controleren automatisch elke 15 seconden.
+                  </p>
+                </div>
+              )}
             </li>
           ))}
         </ul>

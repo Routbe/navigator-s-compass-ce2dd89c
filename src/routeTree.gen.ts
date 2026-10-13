@@ -62,6 +62,7 @@ import { Route as AuthAuthViewRouteImport } from './routes/auth.$authView'
 import { Route as AuthBlueskyRouteImport } from './routes/auth.bluesky'
 import { Route as AuthContinueRouteImport } from './routes/auth_.continue'
 import { Route as BrandSplatRouteImport } from './routes/brand.$'
+import { Route as ClaimTokenRouteImport } from './routes/claim_.$token'
 import { Route as DevEmailsRouteImport } from './routes/dev.emails'
 import { Route as FIdRouteImport } from './routes/f.$id'
 import { Route as GiftCodeRouteImport } from './routes/gift_.$code'
@@ -71,12 +72,19 @@ import { Route as ReviewTokenRouteImport } from './routes/review.$token'
 import { Route as SSlugRouteImport } from './routes/s.$slug'
 import { Route as StatsTokenRouteImport } from './routes/stats.$token'
 import { Route as UUsernameRouteImport } from './routes/u.$username'
+import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
 import { Route as AuthenticatedAdminContactRouteImport } from './routes/_authenticated/admin.contact'
 import { Route as AuthenticatedAdminCustomBadgesRouteImport } from './routes/_authenticated/admin.custom-badges'
+import { Route as AuthenticatedAdminFinanceRouteImport } from './routes/_authenticated/admin.finance'
 import { Route as AuthenticatedAdminGiftCardsRouteImport } from './routes/_authenticated/admin.gift-cards'
+import { Route as AuthenticatedAdminInfraRouteImport } from './routes/_authenticated/admin.infra'
+import { Route as AuthenticatedAdminIntegrationsRouteImport } from './routes/_authenticated/admin.integrations'
+import { Route as AuthenticatedAdminMembersRouteImport } from './routes/_authenticated/admin.members'
+import { Route as AuthenticatedAdminOauthAppsRouteImport } from './routes/_authenticated/admin.oauth-apps'
 import { Route as AuthenticatedAdminOpsRouteImport } from './routes/_authenticated/admin.ops'
 import { Route as AuthenticatedAdminSepaRouteImport } from './routes/_authenticated/admin.sepa'
 import { Route as AuthenticatedAdminSubdomainsRouteImport } from './routes/_authenticated/admin.subdomains'
+import { Route as AuthenticatedAdminTeamRouteImport } from './routes/_authenticated/admin.team'
 import { Route as AuthenticatedAdminVerificationsRouteImport } from './routes/_authenticated/admin.verifications'
 import { Route as AuthenticatedAdminWebhooksRouteImport } from './routes/_authenticated/admin.webhooks'
 import { Route as AuthenticatedConsoleIndexRouteImport } from './routes/_authenticated/console.index'
@@ -100,6 +108,7 @@ import { Route as ApiPublicIntegrationsRouteImport } from './routes/api_.public.
 import { Route as ApiPublicProxyImageRouteImport } from './routes/api_.public.proxy-image'
 import { Route as ApiPublicStripeWebhookRouteImport } from './routes/api_.public.stripe-webhook'
 import { Route as ApiPublicWeatherRouteImport } from './routes/api_.public.weather'
+import { Route as ApiSnapchatStartRouteImport } from './routes/api_.snapchat.start'
 import { Route as ApiSpotifyStartRouteImport } from './routes/api_.spotify.start'
 import { Route as AuthMastodonCallbackRouteImport } from './routes/auth_.mastodon.callback'
 import { Route as RUAliasRouteImport } from './routes/r.u.$alias'
@@ -122,6 +131,8 @@ import { Route as ApiPublicCronScanTransfersRouteImport } from './routes/api_.pu
 import { Route as ApiPublicCronSecureshieldBillingRouteImport } from './routes/api_.public.cron.secureshield-billing'
 import { Route as ApiPublicCronSyncFollowersRouteImport } from './routes/api_.public.cron.sync-followers'
 import { Route as ApiPublicCronSyncSocialsRouteImport } from './routes/api_.public.cron.sync-socials'
+import { Route as ApiPublicIdentityDiditWebhookRouteImport } from './routes/api_.public.identity.didit-webhook'
+import { Route as ApiPublicIdentityWCallbackRouteImport } from './routes/api_.public.identity.w-callback'
 import { Route as ApiPublicMastodonServersRouteImport } from './routes/api_.public.mastodon.servers'
 import { Route as ApiPublicMastodonStartRouteImport } from './routes/api_.public.mastodon.start'
 import { Route as ApiPublicOauthTokenRouteImport } from './routes/api_.public.oauth.token'
@@ -130,6 +141,7 @@ import { Route as ApiPublicOgHandleRouteImport } from './routes/api_.public.og.$
 import { Route as ApiPublicQrUploadRouteImport } from './routes/api_.public.qr.upload'
 import { Route as ApiPublicSessionLogoutRouteImport } from './routes/api_.public.session.logout'
 import { Route as ApiPublicSmsInboundRouteImport } from './routes/api_.public.sms.inbound'
+import { Route as ApiPublicSnapchatCallbackRouteImport } from './routes/api_.public.snapchat.callback'
 import { Route as ApiPublicSpotifyCallbackRouteImport } from './routes/api_.public.spotify.callback'
 import { Route as ApiPublicTelegramWebhookRouteImport } from './routes/api_.public.telegram.webhook'
 import { Route as ApiPublicWeatherWebhookTokenRouteImport } from './routes/api_.public.weather-webhook.$token'
@@ -414,6 +426,11 @@ const BrandSplatRoute = BrandSplatRouteImport.update({
   path: '/brand/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ClaimTokenRoute = ClaimTokenRouteImport.update({
+  id: '/claim_/$token',
+  path: '/claim/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DevEmailsRoute = DevEmailsRouteImport.update({
   id: '/dev/emails',
   path: '/dev/emails',
@@ -459,6 +476,11 @@ const UUsernameRoute = UUsernameRouteImport.update({
   path: '/u/$username',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthenticatedAdminRoute,
+} as any)
 const AuthenticatedAdminContactRoute =
   AuthenticatedAdminContactRouteImport.update({
     id: '/contact',
@@ -471,10 +493,39 @@ const AuthenticatedAdminCustomBadgesRoute =
     path: '/custom-badges',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
+const AuthenticatedAdminFinanceRoute =
+  AuthenticatedAdminFinanceRouteImport.update({
+    id: '/finance',
+    path: '/finance',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 const AuthenticatedAdminGiftCardsRoute =
   AuthenticatedAdminGiftCardsRouteImport.update({
     id: '/gift-cards',
     path: '/gift-cards',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminInfraRoute = AuthenticatedAdminInfraRouteImport.update({
+  id: '/infra',
+  path: '/infra',
+  getParentRoute: () => AuthenticatedAdminRoute,
+} as any)
+const AuthenticatedAdminIntegrationsRoute =
+  AuthenticatedAdminIntegrationsRouteImport.update({
+    id: '/integrations',
+    path: '/integrations',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminMembersRoute =
+  AuthenticatedAdminMembersRouteImport.update({
+    id: '/members',
+    path: '/members',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminOauthAppsRoute =
+  AuthenticatedAdminOauthAppsRouteImport.update({
+    id: '/oauth-apps',
+    path: '/oauth-apps',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
 const AuthenticatedAdminOpsRoute = AuthenticatedAdminOpsRouteImport.update({
@@ -493,6 +544,11 @@ const AuthenticatedAdminSubdomainsRoute =
     path: '/subdomains',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
+const AuthenticatedAdminTeamRoute = AuthenticatedAdminTeamRouteImport.update({
+  id: '/team',
+  path: '/team',
+  getParentRoute: () => AuthenticatedAdminRoute,
+} as any)
 const AuthenticatedAdminVerificationsRoute =
   AuthenticatedAdminVerificationsRouteImport.update({
     id: '/verifications',
@@ -618,6 +674,11 @@ const ApiPublicWeatherRoute = ApiPublicWeatherRouteImport.update({
   path: '/api/public/weather',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiSnapchatStartRoute = ApiSnapchatStartRouteImport.update({
+  id: '/api_/snapchat/start',
+  path: '/api/snapchat/start',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiSpotifyStartRoute = ApiSpotifyStartRouteImport.update({
   id: '/api_/spotify/start',
   path: '/api/spotify/start',
@@ -740,6 +801,18 @@ const ApiPublicCronSyncSocialsRoute =
     path: '/api/public/cron/sync-socials',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicIdentityDiditWebhookRoute =
+  ApiPublicIdentityDiditWebhookRouteImport.update({
+    id: '/api_/public/identity/didit-webhook',
+    path: '/api/public/identity/didit-webhook',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicIdentityWCallbackRoute =
+  ApiPublicIdentityWCallbackRouteImport.update({
+    id: '/api_/public/identity/w-callback',
+    path: '/api/public/identity/w-callback',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicMastodonServersRoute =
   ApiPublicMastodonServersRouteImport.update({
     id: '/api_/public/mastodon/servers',
@@ -781,6 +854,12 @@ const ApiPublicSmsInboundRoute = ApiPublicSmsInboundRouteImport.update({
   path: '/api/public/sms/inbound',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicSnapchatCallbackRoute =
+  ApiPublicSnapchatCallbackRouteImport.update({
+    id: '/api_/public/snapchat/callback',
+    path: '/api/public/snapchat/callback',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicSpotifyCallbackRoute =
   ApiPublicSpotifyCallbackRouteImport.update({
     id: '/api_/public/spotify/callback',
@@ -942,6 +1021,7 @@ export interface FileRoutesByFullPath {
   '/auth/bluesky': typeof AuthBlueskyRoute
   '/auth/continue': typeof AuthContinueRoute
   '/brand/$': typeof BrandSplatRoute
+  '/claim/$token': typeof ClaimTokenRoute
   '/dev/emails': typeof DevEmailsRoute
   '/f/$id': typeof FIdRoute
   '/gift/$code': typeof GiftCodeRoute
@@ -954,10 +1034,16 @@ export interface FileRoutesByFullPath {
   '/auth/': typeof AuthIndexRoute
   '/admin/contact': typeof AuthenticatedAdminContactRoute
   '/admin/custom-badges': typeof AuthenticatedAdminCustomBadgesRoute
+  '/admin/finance': typeof AuthenticatedAdminFinanceRoute
   '/admin/gift-cards': typeof AuthenticatedAdminGiftCardsRoute
+  '/admin/infra': typeof AuthenticatedAdminInfraRoute
+  '/admin/integrations': typeof AuthenticatedAdminIntegrationsRoute
+  '/admin/members': typeof AuthenticatedAdminMembersRoute
+  '/admin/oauth-apps': typeof AuthenticatedAdminOauthAppsRoute
   '/admin/ops': typeof AuthenticatedAdminOpsRoute
   '/admin/sepa': typeof AuthenticatedAdminSepaRoute
   '/admin/subdomains': typeof AuthenticatedAdminSubdomainsRoute
+  '/admin/team': typeof AuthenticatedAdminTeamRoute
   '/admin/verifications': typeof AuthenticatedAdminVerificationsRoute
   '/admin/webhooks': typeof AuthenticatedAdminWebhooksRoute
   '/console/api': typeof AuthenticatedConsoleApiRoute
@@ -980,12 +1066,14 @@ export interface FileRoutesByFullPath {
   '/api/public/proxy-image': typeof ApiPublicProxyImageRoute
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
   '/api/public/weather': typeof ApiPublicWeatherRoute
+  '/api/snapchat/start': typeof ApiSnapchatStartRoute
   '/api/spotify/start': typeof ApiSpotifyStartRoute
   '/auth/mastodon/callback': typeof AuthMastodonCallbackRoute
   '/r/u/$alias': typeof RUAliasRoute
   '/u/$username/$slug': typeof UUsernameSlugRoute
   '/u/$username/donate': typeof UUsernameDonateRoute
   '/u/$username/tip': typeof UUsernameTipRoute
+  '/admin/': typeof AuthenticatedAdminIndexRoute
   '/console/': typeof AuthenticatedConsoleIndexRoute
   '/console/apps/$appId': typeof AuthenticatedConsoleAppsAppIdRouteWithChildren
   '/console/apps/new': typeof AuthenticatedConsoleAppsNewRoute
@@ -1002,6 +1090,8 @@ export interface FileRoutesByFullPath {
   '/api/public/cron/secureshield-billing': typeof ApiPublicCronSecureshieldBillingRoute
   '/api/public/cron/sync-followers': typeof ApiPublicCronSyncFollowersRoute
   '/api/public/cron/sync-socials': typeof ApiPublicCronSyncSocialsRoute
+  '/api/public/identity/didit-webhook': typeof ApiPublicIdentityDiditWebhookRoute
+  '/api/public/identity/w-callback': typeof ApiPublicIdentityWCallbackRoute
   '/api/public/mastodon/servers': typeof ApiPublicMastodonServersRoute
   '/api/public/mastodon/start': typeof ApiPublicMastodonStartRoute
   '/api/public/oauth/token': typeof ApiPublicOauthTokenRoute
@@ -1010,6 +1100,7 @@ export interface FileRoutesByFullPath {
   '/api/public/qr/upload': typeof ApiPublicQrUploadRoute
   '/api/public/session/logout': typeof ApiPublicSessionLogoutRoute
   '/api/public/sms/inbound': typeof ApiPublicSmsInboundRoute
+  '/api/public/snapchat/callback': typeof ApiPublicSnapchatCallbackRoute
   '/api/public/spotify/callback': typeof ApiPublicSpotifyCallbackRoute
   '/api/public/telegram/webhook': typeof ApiPublicTelegramWebhookRoute
   '/api/public/weather-webhook/$token': typeof ApiPublicWeatherWebhookTokenRoute
@@ -1068,7 +1159,6 @@ export interface FileRoutesByTo {
   '/.well-known/atproto-did': typeof DotwellKnownAtprotoDidRoute
   '/.well-known/jwks.json': typeof DotwellKnownJwksDotjsonRoute
   '/.well-known/openid-configuration': typeof DotwellKnownOpenidConfigurationRoute
-  '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/dashboard': typeof AuthenticatedDashboardRouteWithChildren
   '/domains': typeof AuthenticatedDomainsRoute
   '/my-data': typeof AuthenticatedMyDataRoute
@@ -1080,6 +1170,7 @@ export interface FileRoutesByTo {
   '/auth/bluesky': typeof AuthBlueskyRoute
   '/auth/continue': typeof AuthContinueRoute
   '/brand/$': typeof BrandSplatRoute
+  '/claim/$token': typeof ClaimTokenRoute
   '/dev/emails': typeof DevEmailsRoute
   '/f/$id': typeof FIdRoute
   '/gift/$code': typeof GiftCodeRoute
@@ -1092,10 +1183,16 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthIndexRoute
   '/admin/contact': typeof AuthenticatedAdminContactRoute
   '/admin/custom-badges': typeof AuthenticatedAdminCustomBadgesRoute
+  '/admin/finance': typeof AuthenticatedAdminFinanceRoute
   '/admin/gift-cards': typeof AuthenticatedAdminGiftCardsRoute
+  '/admin/infra': typeof AuthenticatedAdminInfraRoute
+  '/admin/integrations': typeof AuthenticatedAdminIntegrationsRoute
+  '/admin/members': typeof AuthenticatedAdminMembersRoute
+  '/admin/oauth-apps': typeof AuthenticatedAdminOauthAppsRoute
   '/admin/ops': typeof AuthenticatedAdminOpsRoute
   '/admin/sepa': typeof AuthenticatedAdminSepaRoute
   '/admin/subdomains': typeof AuthenticatedAdminSubdomainsRoute
+  '/admin/team': typeof AuthenticatedAdminTeamRoute
   '/admin/verifications': typeof AuthenticatedAdminVerificationsRoute
   '/admin/webhooks': typeof AuthenticatedAdminWebhooksRoute
   '/console/api': typeof AuthenticatedConsoleApiRoute
@@ -1117,12 +1214,14 @@ export interface FileRoutesByTo {
   '/api/public/proxy-image': typeof ApiPublicProxyImageRoute
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
   '/api/public/weather': typeof ApiPublicWeatherRoute
+  '/api/snapchat/start': typeof ApiSnapchatStartRoute
   '/api/spotify/start': typeof ApiSpotifyStartRoute
   '/auth/mastodon/callback': typeof AuthMastodonCallbackRoute
   '/r/u/$alias': typeof RUAliasRoute
   '/u/$username/$slug': typeof UUsernameSlugRoute
   '/u/$username/donate': typeof UUsernameDonateRoute
   '/u/$username/tip': typeof UUsernameTipRoute
+  '/admin': typeof AuthenticatedAdminIndexRoute
   '/console': typeof AuthenticatedConsoleIndexRoute
   '/console/apps/new': typeof AuthenticatedConsoleAppsNewRoute
   '/api/public/auth/providers': typeof ApiPublicAuthProvidersRoute
@@ -1138,6 +1237,8 @@ export interface FileRoutesByTo {
   '/api/public/cron/secureshield-billing': typeof ApiPublicCronSecureshieldBillingRoute
   '/api/public/cron/sync-followers': typeof ApiPublicCronSyncFollowersRoute
   '/api/public/cron/sync-socials': typeof ApiPublicCronSyncSocialsRoute
+  '/api/public/identity/didit-webhook': typeof ApiPublicIdentityDiditWebhookRoute
+  '/api/public/identity/w-callback': typeof ApiPublicIdentityWCallbackRoute
   '/api/public/mastodon/servers': typeof ApiPublicMastodonServersRoute
   '/api/public/mastodon/start': typeof ApiPublicMastodonStartRoute
   '/api/public/oauth/token': typeof ApiPublicOauthTokenRoute
@@ -1146,6 +1247,7 @@ export interface FileRoutesByTo {
   '/api/public/qr/upload': typeof ApiPublicQrUploadRoute
   '/api/public/session/logout': typeof ApiPublicSessionLogoutRoute
   '/api/public/sms/inbound': typeof ApiPublicSmsInboundRoute
+  '/api/public/snapchat/callback': typeof ApiPublicSnapchatCallbackRoute
   '/api/public/spotify/callback': typeof ApiPublicSpotifyCallbackRoute
   '/api/public/telegram/webhook': typeof ApiPublicTelegramWebhookRoute
   '/api/public/weather-webhook/$token': typeof ApiPublicWeatherWebhookTokenRoute
@@ -1220,6 +1322,7 @@ export interface FileRoutesById {
   '/auth/bluesky': typeof AuthBlueskyRoute
   '/auth_/continue': typeof AuthContinueRoute
   '/brand/$': typeof BrandSplatRoute
+  '/claim_/$token': typeof ClaimTokenRoute
   '/dev/emails': typeof DevEmailsRoute
   '/f/$id': typeof FIdRoute
   '/gift_/$code': typeof GiftCodeRoute
@@ -1232,10 +1335,16 @@ export interface FileRoutesById {
   '/auth/': typeof AuthIndexRoute
   '/_authenticated/admin/contact': typeof AuthenticatedAdminContactRoute
   '/_authenticated/admin/custom-badges': typeof AuthenticatedAdminCustomBadgesRoute
+  '/_authenticated/admin/finance': typeof AuthenticatedAdminFinanceRoute
   '/_authenticated/admin/gift-cards': typeof AuthenticatedAdminGiftCardsRoute
+  '/_authenticated/admin/infra': typeof AuthenticatedAdminInfraRoute
+  '/_authenticated/admin/integrations': typeof AuthenticatedAdminIntegrationsRoute
+  '/_authenticated/admin/members': typeof AuthenticatedAdminMembersRoute
+  '/_authenticated/admin/oauth-apps': typeof AuthenticatedAdminOauthAppsRoute
   '/_authenticated/admin/ops': typeof AuthenticatedAdminOpsRoute
   '/_authenticated/admin/sepa': typeof AuthenticatedAdminSepaRoute
   '/_authenticated/admin/subdomains': typeof AuthenticatedAdminSubdomainsRoute
+  '/_authenticated/admin/team': typeof AuthenticatedAdminTeamRoute
   '/_authenticated/admin/verifications': typeof AuthenticatedAdminVerificationsRoute
   '/_authenticated/admin/webhooks': typeof AuthenticatedAdminWebhooksRoute
   '/_authenticated/console/api': typeof AuthenticatedConsoleApiRoute
@@ -1258,12 +1367,14 @@ export interface FileRoutesById {
   '/api_/public/proxy-image': typeof ApiPublicProxyImageRoute
   '/api_/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
   '/api_/public/weather': typeof ApiPublicWeatherRoute
+  '/api_/snapchat/start': typeof ApiSnapchatStartRoute
   '/api_/spotify/start': typeof ApiSpotifyStartRoute
   '/auth_/mastodon/callback': typeof AuthMastodonCallbackRoute
   '/r/u/$alias': typeof RUAliasRoute
   '/u/$username/$slug': typeof UUsernameSlugRoute
   '/u/$username/donate': typeof UUsernameDonateRoute
   '/u/$username/tip': typeof UUsernameTipRoute
+  '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/console/': typeof AuthenticatedConsoleIndexRoute
   '/_authenticated/console/apps/$appId': typeof AuthenticatedConsoleAppsAppIdRouteWithChildren
   '/_authenticated/console/apps/new': typeof AuthenticatedConsoleAppsNewRoute
@@ -1280,6 +1391,8 @@ export interface FileRoutesById {
   '/api_/public/cron/secureshield-billing': typeof ApiPublicCronSecureshieldBillingRoute
   '/api_/public/cron/sync-followers': typeof ApiPublicCronSyncFollowersRoute
   '/api_/public/cron/sync-socials': typeof ApiPublicCronSyncSocialsRoute
+  '/api_/public/identity/didit-webhook': typeof ApiPublicIdentityDiditWebhookRoute
+  '/api_/public/identity/w-callback': typeof ApiPublicIdentityWCallbackRoute
   '/api_/public/mastodon/servers': typeof ApiPublicMastodonServersRoute
   '/api_/public/mastodon/start': typeof ApiPublicMastodonStartRoute
   '/api_/public/oauth/token': typeof ApiPublicOauthTokenRoute
@@ -1288,6 +1401,7 @@ export interface FileRoutesById {
   '/api_/public/qr/upload': typeof ApiPublicQrUploadRoute
   '/api_/public/session/logout': typeof ApiPublicSessionLogoutRoute
   '/api_/public/sms/inbound': typeof ApiPublicSmsInboundRoute
+  '/api_/public/snapchat/callback': typeof ApiPublicSnapchatCallbackRoute
   '/api_/public/spotify/callback': typeof ApiPublicSpotifyCallbackRoute
   '/api_/public/telegram/webhook': typeof ApiPublicTelegramWebhookRoute
   '/api_/public/weather-webhook/$token': typeof ApiPublicWeatherWebhookTokenRoute
@@ -1362,6 +1476,7 @@ export interface FileRouteTypes {
     | '/auth/bluesky'
     | '/auth/continue'
     | '/brand/$'
+    | '/claim/$token'
     | '/dev/emails'
     | '/f/$id'
     | '/gift/$code'
@@ -1374,10 +1489,16 @@ export interface FileRouteTypes {
     | '/auth/'
     | '/admin/contact'
     | '/admin/custom-badges'
+    | '/admin/finance'
     | '/admin/gift-cards'
+    | '/admin/infra'
+    | '/admin/integrations'
+    | '/admin/members'
+    | '/admin/oauth-apps'
     | '/admin/ops'
     | '/admin/sepa'
     | '/admin/subdomains'
+    | '/admin/team'
     | '/admin/verifications'
     | '/admin/webhooks'
     | '/console/api'
@@ -1400,12 +1521,14 @@ export interface FileRouteTypes {
     | '/api/public/proxy-image'
     | '/api/public/stripe-webhook'
     | '/api/public/weather'
+    | '/api/snapchat/start'
     | '/api/spotify/start'
     | '/auth/mastodon/callback'
     | '/r/u/$alias'
     | '/u/$username/$slug'
     | '/u/$username/donate'
     | '/u/$username/tip'
+    | '/admin/'
     | '/console/'
     | '/console/apps/$appId'
     | '/console/apps/new'
@@ -1422,6 +1545,8 @@ export interface FileRouteTypes {
     | '/api/public/cron/secureshield-billing'
     | '/api/public/cron/sync-followers'
     | '/api/public/cron/sync-socials'
+    | '/api/public/identity/didit-webhook'
+    | '/api/public/identity/w-callback'
     | '/api/public/mastodon/servers'
     | '/api/public/mastodon/start'
     | '/api/public/oauth/token'
@@ -1430,6 +1555,7 @@ export interface FileRouteTypes {
     | '/api/public/qr/upload'
     | '/api/public/session/logout'
     | '/api/public/sms/inbound'
+    | '/api/public/snapchat/callback'
     | '/api/public/spotify/callback'
     | '/api/public/telegram/webhook'
     | '/api/public/weather-webhook/$token'
@@ -1488,7 +1614,6 @@ export interface FileRouteTypes {
     | '/.well-known/atproto-did'
     | '/.well-known/jwks.json'
     | '/.well-known/openid-configuration'
-    | '/admin'
     | '/dashboard'
     | '/domains'
     | '/my-data'
@@ -1500,6 +1625,7 @@ export interface FileRouteTypes {
     | '/auth/bluesky'
     | '/auth/continue'
     | '/brand/$'
+    | '/claim/$token'
     | '/dev/emails'
     | '/f/$id'
     | '/gift/$code'
@@ -1512,10 +1638,16 @@ export interface FileRouteTypes {
     | '/auth'
     | '/admin/contact'
     | '/admin/custom-badges'
+    | '/admin/finance'
     | '/admin/gift-cards'
+    | '/admin/infra'
+    | '/admin/integrations'
+    | '/admin/members'
+    | '/admin/oauth-apps'
     | '/admin/ops'
     | '/admin/sepa'
     | '/admin/subdomains'
+    | '/admin/team'
     | '/admin/verifications'
     | '/admin/webhooks'
     | '/console/api'
@@ -1537,12 +1669,14 @@ export interface FileRouteTypes {
     | '/api/public/proxy-image'
     | '/api/public/stripe-webhook'
     | '/api/public/weather'
+    | '/api/snapchat/start'
     | '/api/spotify/start'
     | '/auth/mastodon/callback'
     | '/r/u/$alias'
     | '/u/$username/$slug'
     | '/u/$username/donate'
     | '/u/$username/tip'
+    | '/admin'
     | '/console'
     | '/console/apps/new'
     | '/api/public/auth/providers'
@@ -1558,6 +1692,8 @@ export interface FileRouteTypes {
     | '/api/public/cron/secureshield-billing'
     | '/api/public/cron/sync-followers'
     | '/api/public/cron/sync-socials'
+    | '/api/public/identity/didit-webhook'
+    | '/api/public/identity/w-callback'
     | '/api/public/mastodon/servers'
     | '/api/public/mastodon/start'
     | '/api/public/oauth/token'
@@ -1566,6 +1702,7 @@ export interface FileRouteTypes {
     | '/api/public/qr/upload'
     | '/api/public/session/logout'
     | '/api/public/sms/inbound'
+    | '/api/public/snapchat/callback'
     | '/api/public/spotify/callback'
     | '/api/public/telegram/webhook'
     | '/api/public/weather-webhook/$token'
@@ -1639,6 +1776,7 @@ export interface FileRouteTypes {
     | '/auth/bluesky'
     | '/auth_/continue'
     | '/brand/$'
+    | '/claim_/$token'
     | '/dev/emails'
     | '/f/$id'
     | '/gift_/$code'
@@ -1651,10 +1789,16 @@ export interface FileRouteTypes {
     | '/auth/'
     | '/_authenticated/admin/contact'
     | '/_authenticated/admin/custom-badges'
+    | '/_authenticated/admin/finance'
     | '/_authenticated/admin/gift-cards'
+    | '/_authenticated/admin/infra'
+    | '/_authenticated/admin/integrations'
+    | '/_authenticated/admin/members'
+    | '/_authenticated/admin/oauth-apps'
     | '/_authenticated/admin/ops'
     | '/_authenticated/admin/sepa'
     | '/_authenticated/admin/subdomains'
+    | '/_authenticated/admin/team'
     | '/_authenticated/admin/verifications'
     | '/_authenticated/admin/webhooks'
     | '/_authenticated/console/api'
@@ -1677,12 +1821,14 @@ export interface FileRouteTypes {
     | '/api_/public/proxy-image'
     | '/api_/public/stripe-webhook'
     | '/api_/public/weather'
+    | '/api_/snapchat/start'
     | '/api_/spotify/start'
     | '/auth_/mastodon/callback'
     | '/r/u/$alias'
     | '/u/$username/$slug'
     | '/u/$username/donate'
     | '/u/$username/tip'
+    | '/_authenticated/admin/'
     | '/_authenticated/console/'
     | '/_authenticated/console/apps/$appId'
     | '/_authenticated/console/apps/new'
@@ -1699,6 +1845,8 @@ export interface FileRouteTypes {
     | '/api_/public/cron/secureshield-billing'
     | '/api_/public/cron/sync-followers'
     | '/api_/public/cron/sync-socials'
+    | '/api_/public/identity/didit-webhook'
+    | '/api_/public/identity/w-callback'
     | '/api_/public/mastodon/servers'
     | '/api_/public/mastodon/start'
     | '/api_/public/oauth/token'
@@ -1707,6 +1855,7 @@ export interface FileRouteTypes {
     | '/api_/public/qr/upload'
     | '/api_/public/session/logout'
     | '/api_/public/sms/inbound'
+    | '/api_/public/snapchat/callback'
     | '/api_/public/spotify/callback'
     | '/api_/public/telegram/webhook'
     | '/api_/public/weather-webhook/$token'
@@ -1769,6 +1918,7 @@ export interface RootRouteChildren {
   ApiPaymentStatusRoute: typeof ApiPaymentStatusRoute
   AuthContinueRoute: typeof AuthContinueRoute
   BrandSplatRoute: typeof BrandSplatRoute
+  ClaimTokenRoute: typeof ClaimTokenRoute
   DevEmailsRoute: typeof DevEmailsRoute
   FIdRoute: typeof FIdRoute
   GiftCodeRoute: typeof GiftCodeRoute
@@ -1790,6 +1940,7 @@ export interface RootRouteChildren {
   ApiPublicProxyImageRoute: typeof ApiPublicProxyImageRoute
   ApiPublicStripeWebhookRoute: typeof ApiPublicStripeWebhookRoute
   ApiPublicWeatherRoute: typeof ApiPublicWeatherRoute
+  ApiSnapchatStartRoute: typeof ApiSnapchatStartRoute
   ApiSpotifyStartRoute: typeof ApiSpotifyStartRoute
   AuthMastodonCallbackRoute: typeof AuthMastodonCallbackRoute
   RUAliasRoute: typeof RUAliasRoute
@@ -1806,6 +1957,8 @@ export interface RootRouteChildren {
   ApiPublicCronSecureshieldBillingRoute: typeof ApiPublicCronSecureshieldBillingRoute
   ApiPublicCronSyncFollowersRoute: typeof ApiPublicCronSyncFollowersRoute
   ApiPublicCronSyncSocialsRoute: typeof ApiPublicCronSyncSocialsRoute
+  ApiPublicIdentityDiditWebhookRoute: typeof ApiPublicIdentityDiditWebhookRoute
+  ApiPublicIdentityWCallbackRoute: typeof ApiPublicIdentityWCallbackRoute
   ApiPublicMastodonServersRoute: typeof ApiPublicMastodonServersRoute
   ApiPublicMastodonStartRoute: typeof ApiPublicMastodonStartRoute
   ApiPublicOauthTokenRoute: typeof ApiPublicOauthTokenRoute
@@ -1814,6 +1967,7 @@ export interface RootRouteChildren {
   ApiPublicQrUploadRoute: typeof ApiPublicQrUploadRoute
   ApiPublicSessionLogoutRoute: typeof ApiPublicSessionLogoutRoute
   ApiPublicSmsInboundRoute: typeof ApiPublicSmsInboundRoute
+  ApiPublicSnapchatCallbackRoute: typeof ApiPublicSnapchatCallbackRoute
   ApiPublicSpotifyCallbackRoute: typeof ApiPublicSpotifyCallbackRoute
   ApiPublicTelegramWebhookRoute: typeof ApiPublicTelegramWebhookRoute
   ApiPublicWeatherWebhookTokenRoute: typeof ApiPublicWeatherWebhookTokenRoute
@@ -2194,6 +2348,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BrandSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/claim_/$token': {
+      id: '/claim_/$token'
+      path: '/claim/$token'
+      fullPath: '/claim/$token'
+      preLoaderRoute: typeof ClaimTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/dev/emails': {
       id: '/dev/emails'
       path: '/dev/emails'
@@ -2257,6 +2418,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof UUsernameRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/admin/': {
+      id: '/_authenticated/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AuthenticatedAdminIndexRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/_authenticated/admin/contact': {
       id: '/_authenticated/admin/contact'
       path: '/contact'
@@ -2271,11 +2439,46 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminCustomBadgesRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/admin/finance': {
+      id: '/_authenticated/admin/finance'
+      path: '/finance'
+      fullPath: '/admin/finance'
+      preLoaderRoute: typeof AuthenticatedAdminFinanceRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/_authenticated/admin/gift-cards': {
       id: '/_authenticated/admin/gift-cards'
       path: '/gift-cards'
       fullPath: '/admin/gift-cards'
       preLoaderRoute: typeof AuthenticatedAdminGiftCardsRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/infra': {
+      id: '/_authenticated/admin/infra'
+      path: '/infra'
+      fullPath: '/admin/infra'
+      preLoaderRoute: typeof AuthenticatedAdminInfraRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/integrations': {
+      id: '/_authenticated/admin/integrations'
+      path: '/integrations'
+      fullPath: '/admin/integrations'
+      preLoaderRoute: typeof AuthenticatedAdminIntegrationsRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/members': {
+      id: '/_authenticated/admin/members'
+      path: '/members'
+      fullPath: '/admin/members'
+      preLoaderRoute: typeof AuthenticatedAdminMembersRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/oauth-apps': {
+      id: '/_authenticated/admin/oauth-apps'
+      path: '/oauth-apps'
+      fullPath: '/admin/oauth-apps'
+      preLoaderRoute: typeof AuthenticatedAdminOauthAppsRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
     '/_authenticated/admin/ops': {
@@ -2297,6 +2500,13 @@ declare module '@tanstack/react-router' {
       path: '/subdomains'
       fullPath: '/admin/subdomains'
       preLoaderRoute: typeof AuthenticatedAdminSubdomainsRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/team': {
+      id: '/_authenticated/admin/team'
+      path: '/team'
+      fullPath: '/admin/team'
+      preLoaderRoute: typeof AuthenticatedAdminTeamRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
     '/_authenticated/admin/verifications': {
@@ -2460,6 +2670,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicWeatherRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api_/snapchat/start': {
+      id: '/api_/snapchat/start'
+      path: '/api/snapchat/start'
+      fullPath: '/api/snapchat/start'
+      preLoaderRoute: typeof ApiSnapchatStartRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api_/spotify/start': {
       id: '/api_/spotify/start'
       path: '/api/spotify/start'
@@ -2614,6 +2831,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicCronSyncSocialsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api_/public/identity/didit-webhook': {
+      id: '/api_/public/identity/didit-webhook'
+      path: '/api/public/identity/didit-webhook'
+      fullPath: '/api/public/identity/didit-webhook'
+      preLoaderRoute: typeof ApiPublicIdentityDiditWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api_/public/identity/w-callback': {
+      id: '/api_/public/identity/w-callback'
+      path: '/api/public/identity/w-callback'
+      fullPath: '/api/public/identity/w-callback'
+      preLoaderRoute: typeof ApiPublicIdentityWCallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api_/public/mastodon/servers': {
       id: '/api_/public/mastodon/servers'
       path: '/api/public/mastodon/servers'
@@ -2668,6 +2899,13 @@ declare module '@tanstack/react-router' {
       path: '/api/public/sms/inbound'
       fullPath: '/api/public/sms/inbound'
       preLoaderRoute: typeof ApiPublicSmsInboundRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api_/public/snapchat/callback': {
+      id: '/api_/public/snapchat/callback'
+      path: '/api/public/snapchat/callback'
+      fullPath: '/api/public/snapchat/callback'
+      preLoaderRoute: typeof ApiPublicSnapchatCallbackRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api_/public/spotify/callback': {
@@ -2818,23 +3056,37 @@ const UsernameRouteWithChildren = UsernameRoute._addFileChildren(
 interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminContactRoute: typeof AuthenticatedAdminContactRoute
   AuthenticatedAdminCustomBadgesRoute: typeof AuthenticatedAdminCustomBadgesRoute
+  AuthenticatedAdminFinanceRoute: typeof AuthenticatedAdminFinanceRoute
   AuthenticatedAdminGiftCardsRoute: typeof AuthenticatedAdminGiftCardsRoute
+  AuthenticatedAdminInfraRoute: typeof AuthenticatedAdminInfraRoute
+  AuthenticatedAdminIntegrationsRoute: typeof AuthenticatedAdminIntegrationsRoute
+  AuthenticatedAdminMembersRoute: typeof AuthenticatedAdminMembersRoute
+  AuthenticatedAdminOauthAppsRoute: typeof AuthenticatedAdminOauthAppsRoute
   AuthenticatedAdminOpsRoute: typeof AuthenticatedAdminOpsRoute
   AuthenticatedAdminSepaRoute: typeof AuthenticatedAdminSepaRoute
   AuthenticatedAdminSubdomainsRoute: typeof AuthenticatedAdminSubdomainsRoute
+  AuthenticatedAdminTeamRoute: typeof AuthenticatedAdminTeamRoute
   AuthenticatedAdminVerificationsRoute: typeof AuthenticatedAdminVerificationsRoute
   AuthenticatedAdminWebhooksRoute: typeof AuthenticatedAdminWebhooksRoute
+  AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
 }
 
 const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminContactRoute: AuthenticatedAdminContactRoute,
   AuthenticatedAdminCustomBadgesRoute: AuthenticatedAdminCustomBadgesRoute,
+  AuthenticatedAdminFinanceRoute: AuthenticatedAdminFinanceRoute,
   AuthenticatedAdminGiftCardsRoute: AuthenticatedAdminGiftCardsRoute,
+  AuthenticatedAdminInfraRoute: AuthenticatedAdminInfraRoute,
+  AuthenticatedAdminIntegrationsRoute: AuthenticatedAdminIntegrationsRoute,
+  AuthenticatedAdminMembersRoute: AuthenticatedAdminMembersRoute,
+  AuthenticatedAdminOauthAppsRoute: AuthenticatedAdminOauthAppsRoute,
   AuthenticatedAdminOpsRoute: AuthenticatedAdminOpsRoute,
   AuthenticatedAdminSepaRoute: AuthenticatedAdminSepaRoute,
   AuthenticatedAdminSubdomainsRoute: AuthenticatedAdminSubdomainsRoute,
+  AuthenticatedAdminTeamRoute: AuthenticatedAdminTeamRoute,
   AuthenticatedAdminVerificationsRoute: AuthenticatedAdminVerificationsRoute,
   AuthenticatedAdminWebhooksRoute: AuthenticatedAdminWebhooksRoute,
+  AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
 }
 
 const AuthenticatedAdminRouteWithChildren =
@@ -3052,6 +3304,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPaymentStatusRoute: ApiPaymentStatusRoute,
   AuthContinueRoute: AuthContinueRoute,
   BrandSplatRoute: BrandSplatRoute,
+  ClaimTokenRoute: ClaimTokenRoute,
   DevEmailsRoute: DevEmailsRoute,
   FIdRoute: FIdRoute,
   GiftCodeRoute: GiftCodeRoute,
@@ -3073,6 +3326,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicProxyImageRoute: ApiPublicProxyImageRoute,
   ApiPublicStripeWebhookRoute: ApiPublicStripeWebhookRoute,
   ApiPublicWeatherRoute: ApiPublicWeatherRoute,
+  ApiSnapchatStartRoute: ApiSnapchatStartRoute,
   ApiSpotifyStartRoute: ApiSpotifyStartRoute,
   AuthMastodonCallbackRoute: AuthMastodonCallbackRoute,
   RUAliasRoute: RUAliasRoute,
@@ -3090,6 +3344,8 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicCronSecureshieldBillingRoute: ApiPublicCronSecureshieldBillingRoute,
   ApiPublicCronSyncFollowersRoute: ApiPublicCronSyncFollowersRoute,
   ApiPublicCronSyncSocialsRoute: ApiPublicCronSyncSocialsRoute,
+  ApiPublicIdentityDiditWebhookRoute: ApiPublicIdentityDiditWebhookRoute,
+  ApiPublicIdentityWCallbackRoute: ApiPublicIdentityWCallbackRoute,
   ApiPublicMastodonServersRoute: ApiPublicMastodonServersRoute,
   ApiPublicMastodonStartRoute: ApiPublicMastodonStartRoute,
   ApiPublicOauthTokenRoute: ApiPublicOauthTokenRoute,
@@ -3098,6 +3354,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicQrUploadRoute: ApiPublicQrUploadRoute,
   ApiPublicSessionLogoutRoute: ApiPublicSessionLogoutRoute,
   ApiPublicSmsInboundRoute: ApiPublicSmsInboundRoute,
+  ApiPublicSnapchatCallbackRoute: ApiPublicSnapchatCallbackRoute,
   ApiPublicSpotifyCallbackRoute: ApiPublicSpotifyCallbackRoute,
   ApiPublicTelegramWebhookRoute: ApiPublicTelegramWebhookRoute,
   ApiPublicWeatherWebhookTokenRoute: ApiPublicWeatherWebhookTokenRoute,

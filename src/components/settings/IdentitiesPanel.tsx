@@ -131,7 +131,7 @@ export function IdentitiesPanel() {
                 {linked.map((identity) => (
                   <div key={identity.id} className="ml-11 flex items-center gap-2">
                     <span className="min-w-0 flex-1 truncate text-xs text-muted-foreground">
-                      Gekoppeld als {identity.displayName ?? identity.email ?? identity.providerAccountId}
+                      Gekoppeld als {identity.displayName ?? identity.email ?? `${provider.label}-account`}
                     </span>
                     {(() => {
                       const level = emailTrust({ email: identity.email, emailVerified: true, verifiedBy: [identity.provider] });

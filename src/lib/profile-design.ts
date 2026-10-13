@@ -354,6 +354,34 @@ export const ROUT_PRESETS: {
       fontPairing: "serif",
     },
   },
+  {
+    id: "rout-default",
+    label: "ROUT Default",
+    themeId: "rout-default",
+    cardStyle: "bordered",
+    design: { wallpaperType: "solid", wallpaperColor: "#ffffff", buttonVariant: "fill", buttonRadius: "rounded", fontPairing: "modern" },
+  },
+  {
+    id: "obsidian-dark",
+    label: "Obsidian Dark",
+    themeId: "obsidian-dark",
+    cardStyle: "sharp",
+    design: { wallpaperType: "solid", wallpaperColor: "#07080a", buttonVariant: "outline", buttonRadius: "sharp", fontPairing: "mono" },
+  },
+  {
+    id: "biophilic",
+    label: "Biophilic Minimal",
+    themeId: "biophilic",
+    cardStyle: "pill",
+    design: { wallpaperType: "solid", wallpaperColor: "#efe9dd", buttonVariant: "soft", buttonRadius: "xl", fontPairing: "editorial" },
+  },
+  {
+    id: "inkt",
+    label: "Flat Hand-Drawn",
+    themeId: "inkt",
+    cardStyle: "bordered",
+    design: { wallpaperType: "solid", wallpaperColor: "#fbf8f1", buttonVariant: "hard", buttonRadius: "soft", fontPairing: "handwritten" },
+  },
 ];
 
 /** Kant-en-klare lineaire/mesh gradients voor de achtergrond. */

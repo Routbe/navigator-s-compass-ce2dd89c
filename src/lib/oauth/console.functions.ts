@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { cleanRedirectUri, normalizeRedirectUri } from "./redirect-match";
 import { optionalAuth, requireAuth } from "@/lib/auth/middleware";
 import { needsStepUp, shareRichIdentity, STRICT_ACR } from "./step-up";
 import { clientSchema, settingsSchema, testUserSchema, verificationRequestSchema } from "./console-schemas";
@@ -249,7 +250,8 @@ export const reviewAppVerificationRequest = createServerFn({ method: "POST" })
 
 const authorizeSchema = z.object({
   clientId: z.string().min(4).max(120),
-  redirectUri: z.string().min(4).max(300),
+  // Keycloak/brokers sturen lange, soms dubbel-geëncodeerde URI's: opschonen vóór alles.
+  redirectUri: z.string().min(4).max(2000).transform((v) => cleanRedirectUri(v)),
   scope: z.string().max(200).optional(),
   state: z.string().max(300).nullable().optional(),
   nonce: z.string().max(300).nullable().optional(),
@@ -278,6 +280,8 @@ export type AuthorizePrompt = {
   };
   scopes?: string[];
   account?: { email: string; name: string | null; handle: string | null; avatarUrl: string | null };
+  /** Sign-in providers linked to this ROUT account (Google, Apple, …) — names only. */
+  linkedProviders?: string[];
   alreadyGranted?: boolean;
   /** Strict flow / prompt=login / max_age / acr_values → extra code required. */
   requiresStepUp?: boolean;
@@ -320,6 +324,9 @@ async function checkRequest(data: AuthorizeInput) {
   const client = await getClientByClientId(data.clientId);
   if (!client || client.status !== "active") return fail("invalid_client", "Deze app is onbekend bij ROUT.");
   if (!redirectAllowed(client, data.redirectUri)) {
+    console.error(
+      `[OIDC Auth] Redirect URI mismatch for client ${client.clientId}. Allowed URIs in DB: ${JSON.stringify(client.redirectUris)} | Requested: ${JSON.stringify(data.redirectUri)} | Normalized requested: ${JSON.stringify(normalizeRedirectUri(data.redirectUri))}`,
+    );
     return fail("invalid_redirect_uri", "Het terugkeeradres van deze app klopt niet.");
   }
   const hasPkce = data.codeChallenge.length > 0;
@@ -377,6 +384,11 @@ export const describeAuthorizeRequest = createServerFn({ method: "POST" })
         name: (context.user.userMetadata["full_name"] as string | null) ?? null,
         ...(await profileOf(context.userId)),
       },
+      linkedProviders: await (async () => {
+        const { linkedAccountsOf } = await import("./provider.server");
+        const list = await linkedAccountsOf(context.userId).catch(() => []);
+        return [...new Set(list.map((l) => l.provider))];
+      })(),
       alreadyGranted: await hasConsent(context.userId, client.clientId, scopes),
       requiresStepUp: stepUp,
       richIdentity: client.richIdentityEnabled,

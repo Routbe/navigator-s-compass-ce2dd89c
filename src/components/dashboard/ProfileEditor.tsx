@@ -1,3 +1,5 @@
+import { GuestbookAccordion } from "@/components/studio/GuestbookAccordion";
+import { QuestionsInboxAccordion } from "@/components/studio/QuestionsInboxAccordion";
 import { QrCode } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
@@ -939,6 +941,10 @@ export function ProfileEditor({ variant = "verified" }: { variant?: ProfileVaria
               <LiveStatusAccordion prefs={prefs} setPref={setPref} />
 
               <IntegrationsAccordion />
+
+              <QuestionsInboxAccordion />
+
+              <GuestbookAccordion />
 
               <ProfileContentAccordion
                 blocks={blocks}

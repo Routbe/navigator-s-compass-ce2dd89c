@@ -16,16 +16,56 @@ export function isPublicOidcPath(pathname: string): boolean {
   return PUBLIC_OIDC_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`));
 }
 
-export function securityHeaders(isHttps: boolean): Record<string, string> {
+/** Sensitive areas (sign-in, passkeys, account settings) that get strict isolation. */
+export const STRICT_PATH_PREFIXES = ["/auth", "/settings"];
+
+export function isStrictPath(pathname: string): boolean {
+  return STRICT_PATH_PREFIXES.some((p) => pathname === p || pathname.startsWith(`${p}/`));
+}
+
+/**
+ * Strict CSP for /auth and /settings: default-src 'self'. Inline scripts/styles stay
+ * allowed because SSR hydration emits them; form-action allows OAuth provider redirects.
+ */
+export const STRICT_CSP = [
+  "default-src 'self'",
+  "script-src 'self' 'unsafe-inline'",
+  "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+  "font-src 'self' data: https://fonts.gstatic.com",
+  "img-src 'self' data: blob: https:",
+  "connect-src 'self' https: wss:",
+  "worker-src 'self' blob:",
+  "frame-src 'self' https:",
+  "form-action 'self' https:",
+  "base-uri 'self'",
+  "object-src 'none'",
+  FRAME_ANCESTORS,
+].join("; ");
+
+/**
+ * Route-aware headers. Public pages (profiles, home) stay maximally compatible
+ * (no COOP, cross-origin CORP) so browsers like Opera never answer
+ * ERR_BLOCKED_BY_RESPONSE; /auth and /settings get a strict CSP plus
+ * same-origin resource policy. COOP stays `same-origin-allow-popups` there
+ * because OAuth/passkey popups must keep their opener.
+ */
+export function securityHeaders(isHttps: boolean, pathname = "/"): Record<string, string> {
+  const strict = isStrictPath(pathname);
   const h: Record<string, string> = {
     "X-Content-Type-Options": "nosniff",
     "Referrer-Policy": "strict-origin-when-cross-origin",
     "X-DNS-Prefetch-Control": "off",
     "Permissions-Policy": "geolocation=(), microphone=(), payment=()",
-    "Content-Security-Policy": `${FRAME_ANCESTORS}; base-uri 'self'; object-src 'none'`,
-    // Popups stay usable for OAuth (Login met ROUT, social sign-in).
-    "Cross-Origin-Opener-Policy": "same-origin-allow-popups",
   };
+  if (strict) {
+    h["Content-Security-Policy"] = STRICT_CSP;
+    h["Cross-Origin-Opener-Policy"] = "same-origin-allow-popups";
+    h["Cross-Origin-Resource-Policy"] = "same-origin";
+  } else {
+    h["Content-Security-Policy"] = `${FRAME_ANCESTORS}; base-uri 'self'; object-src 'none'`;
+    h["Cross-Origin-Opener-Policy"] = "unsafe-none";
+    h["Cross-Origin-Resource-Policy"] = "cross-origin";
+  }
   if (isHttps) h["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains";
   return h;
 }

@@ -1135,6 +1135,10 @@ export const PROFILE_THEMES: {
     border: "#3a2a1c",
     accent: "#f59e0b",
   },
+  { id: "rout-default", label: "ROUT Default", bg: "#ffffff", card: "#ffffff", text: "#0a0a0a", muted: "#6b6b6b", border: "#e5e5e5", accent: "#0a0a0a" },
+  { id: "obsidian-dark", label: "Obsidian Dark", bg: "#07080a", card: "#0f1114", text: "#fafafa", muted: "#8b8f97", border: "#24272d", accent: "#ffffff" },
+  { id: "biophilic", label: "Biophilic Minimal", bg: "#efe9dd", card: "#f7f3ea", text: "#2f3a2b", muted: "#7a7f6a", border: "#d6cdb8", accent: "#5b6e47" },
+  { id: "inkt", label: "Flat Hand-Drawn", bg: "#fbf8f1", card: "#fffdf8", text: "#141414", muted: "#555048", border: "#141414", accent: "#141414" },
 ];
 
 export const CARD_STYLES = [

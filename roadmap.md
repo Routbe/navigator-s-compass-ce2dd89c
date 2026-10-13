@@ -1,30 +1,31 @@
 # Roadmap
+- [x] A: typecheck + tests groen
+- [x] B: cleanup-assets cron (user_assets + shared_files, fail-safe) + schema docs
+- [x] C: Opera/Chromium storage + SVG ids
+- [x] D: Custom domain DNS stap
+- [x] E: Telegram webhook secret + setWebhook script
+- [x] F: Hybride identiteitsverificatie (db/81, server, UI)
+- [x] G: SMS gateway payload fix + Telegram /start
+- [x] H: Wachtwoord/2FA zonder wachtwoord via e-mailcode
+- [x] I: Account samenvoegen (handle/ontwerp kiezen, e-mailcode, alles samen)
+- [x] J: Opgeslagen kaartontwerpen
 
-## Klaar (goedgekeurd plan)
-- [x] AI-prompts: branding-sectie met officiële bunny-SVG + kleuren (integration-templates.ts + tests)
-- [x] Mails: appCreatedMail (eigenaar) + verificationRequestedMail (admin) via site-mail.server.ts
-- [x] Native OIDC-login: oidc-provider valt terug op eigen discovery + first-party publieke PKCE-client (db/78), label "ROUT ID"
-
-## Daarna (nieuw verzoek)
-- [x] QR-persistentie: QR-stijl opslaan in profiles.qr_settings (jsonb), herladen in Studio
-- [x] Social share inspecteur: smart defaults (titel = naam (@handle) — ROUT, omschrijving = bio/tagline, OG-afbeelding = avatar), overschrijfbaar
-
-## Daarna (dashboard & storage)
-- [x] Dashboard: "Laatste Bezoeken" pagineren/max 10-15 met "Toon meer"; dashboard herstructureren in tabs (QR, Short Links, Assets)
-- [x] QR-beheer: grid met scan-analytics, opnieuw downloaden, stijl bewerken
-- [x] Short Links: beheertabel met kliktellingen en bewerkbare bestemmings-URL's
-- [x] Scaleway-retentie: free 7 dagen (configureerbaar tot 3 mnd), PRO/verified "Lifetime" (50 assets / 500MB permanent); Asset Manager UI met verloopstatus, verwijderen, upgrade
-
-## Deze ronde
-- [x] sms-gate.app payload/auth, +32 automatisch, buitenland via inkomende sms (webhook /api/public/sms/inbound)
-- [x] 2FA/passkey-foutmeldingen, samenvoegen zonder wachtwoord, profielscope (db/79), Glass Media Capsule + 🎧
-- [ ] Telegram-bot verificatie + admin-wachtrij (niet gebouwd)
-- [ ] Dashboard/QR/Short Links/Scaleway-retentie (niet gebouwd)
-
-## Master prompt (fasen 1–5)
-- [x] QR-stijl in display_prefs.qrSettings + Studio-kaart
-- [x] Social share suggesties + platformpreview
-- [x] Dashboard-tabs, bezoekenpaginering, short-links-tabel
-- [x] user_assets (db/80), Asset Manager, cleanup-cron
-- [x] Telegram-webhook + admin-wachtrij telefoonverificatie
-- [ ] Telegram-bot activeren (wacht op TELEGRAM_BOT_TOKEN + setWebhook)
+## Open (uit specificaties)
+- [x] Mission Control: actieve leden, badges en actiepunten op /admin
+- [x] Financieel beheer: IBAN-overzicht en exacte naamsignalering op /admin/finance
+- [x] Infrastructuur: webhooklogboek, subdomeinen en aliassen op /admin/infra
+- [x] Nieuwe beheermodules: autorisatie, 30 gerichte tests en echte Neon-reads
+- [ ] Admin ingelogde eindcontrole (wacht op toegang tot een beheerderssessie; alleen uitgelogde redirects gecontroleerd)
+- [ ] Publieke Q&A en thema's (geparkeerd op verzoek; geen implementatie)
+- [x] Badges: wapenschilden (db/86), uploader/bewerken in /admin/custom-badges, interactieve pop-up op profiel
+- [ ] Snapchat Login Kit + Bitmoji-picker + handmatige status/mood-widget (geen Snap Map/GPS) (wacht op Snap Kit client ID/secret)
+- [x] Admin-portaal split (APP_MODE, rout.dlp.li, noindex) + harde build-split
+- [x] Leden 360° statusfilter server-side
+- [x] Sovereign Tip Jar (☕-knop + EPC-QR op profiel)
+- [ ] Testsuite account-merge / security-code / sms-provider / telegram
+- [x] Badge-uploads via Scaleway S3 (S3_* env vars) i.p.v. Vercel Blob
+- [x] Digitaal paspoort: grid en interactieve details afwerken
+- [x] Claim-a-Stamp: login-terugkeer, succesanimatie en veilige limieten (8 gerichte tests geslaagd)
+- [ ] Ingelogde claim en paspoort-pop-up end-to-end controleren (wacht op een testaccount en badge/claimlink; geen openbare profielen met stempels aanwezig)
+- [x] Publieke/admin shells + preview-schakelaar
+- [x] db/92 toegepast in Neon via migrate-gateway

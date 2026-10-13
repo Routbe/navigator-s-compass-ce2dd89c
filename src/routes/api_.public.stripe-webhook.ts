@@ -50,8 +50,8 @@ export const Route = createFileRoute("/api_/public/stripe-webhook")({
         if (eventId) {
           try {
             const claimed = (await sql`
-              insert into public.webhook_events (id, source, kind, status)
-              values (${eventId}, 'stripe', ${kind}, 'processing')
+              insert into public.webhook_events (id, source, kind, status, direction)
+              values (${eventId}, 'stripe', ${kind}, 'processing', 'inbound')
               on conflict (id) do update
                  set status = 'processing',
                      attempts = public.webhook_events.attempts + 1,
@@ -82,7 +82,7 @@ export const Route = createFileRoute("/api_/public/stripe-webhook")({
           if (eventId) {
             await sql`
               update public.webhook_events
-                 set status = 'done', result = ${result ?? null},
+                 set status = 'done', result = ${result ?? null}, http_status = 200, direction = 'inbound',
                      completed_at = now(), updated_at = now()
                where id = ${eventId}
             `;
@@ -100,7 +100,7 @@ export const Route = createFileRoute("/api_/public/stripe-webhook")({
           if (eventId) {
             await sql`
               update public.webhook_events
-                 set status = 'failed', error = ${message.slice(0, 500)}, updated_at = now()
+                 set status = 'failed', error = ${message.slice(0, 500)}, http_status = 500, direction = 'inbound', updated_at = now()
                where id = ${eventId}
             `.catch(() => undefined);
           }

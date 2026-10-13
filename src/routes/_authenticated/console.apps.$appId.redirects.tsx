@@ -1,3 +1,4 @@
+import { cleanRedirectUri } from "@/lib/oauth/redirect-match";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { Trash2 } from "lucide-react";
@@ -41,7 +42,7 @@ function RedirectsPage() {
           className="mt-4 flex gap-2"
           onSubmit={async (e) => {
             e.preventDefault();
-            const uri = value.trim();
+            const uri = cleanRedirectUri(value);
             const problem = redirectError(uri, app.redirectUris);
             setErr(problem);
             if (problem) return;
