@@ -27,6 +27,7 @@ import { getEnabledProviders } from "@/lib/auth-providers.functions";
 import { Altcha } from "@/components/Altcha";
 import { AUTH_PROVIDERS, KEYED_PROVIDERS, FediverseDialog, ProviderMark } from "@/components/auth/ProviderKit";
 import { isAdminMode } from "@/lib/app-mode";
+import { usePortalFrame } from "@/components/layout/PortalContext";
 import { takeProof } from "@/lib/altcha-client";
 import { OtpInput } from "@/components/otp/OtpInput";
 import { redeemLoginCodeFn } from "@/lib/login-code.functions";
@@ -55,13 +56,14 @@ function errorMessage(error: unknown, fallback: string) {
  */
 export default function AuthNeon({ initialMode = "magic" }: { initialMode?: Mode }) {
   const { t } = useI18n();
+  const adminPortal = Boolean(usePortalFrame()) || isAdminMode();
   const nav = useNavigate();
   const { user, refresh } = useAuth();
 
   const [email, setEmail] = useState("");
   const [emailError, setEmailError] = useState<string | null>(null);
   const [password, setPassword] = useState("");
-  const [mode, setMode] = useState<Mode>(initialMode);
+  const [mode, setMode] = useState<Mode>(adminPortal && initialMode === "signup" ? "magic" : initialMode);
   const [sentTo, setSentTo] = useState<string | null>(null);
   const [otp, setOtp] = useState("");
   const [otpBusy, setOtpBusy] = useState(false);
@@ -95,6 +97,7 @@ export default function AuthNeon({ initialMode = "magic" }: { initialMode?: Mode
   const [enabled, setEnabled] = useState<string[] | null>(null);
 
   useEffect(() => {
+    if (adminPortal) return;
     // Openbare route; faalt die, dan blijft `enabled` null en proberen we gewoon.
     fetch("/api/public/auth/providers", { credentials: "omit" })
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
@@ -112,7 +115,7 @@ export default function AuthNeon({ initialMode = "magic" }: { initialMode?: Mode
   // Het volledige raster blijft altijd zichtbaar; een provider zonder sleutels
   // stuurt geen aanvraag maar toont een duidelijke melding (zie `oauth`).
   // Admin-portaal (zero-trust): geen sociale logins, alleen e-mail/magic link + passkeys.
-  const visibleTiles = isAdminMode() ? [] : AUTH_PROVIDERS;
+  const visibleTiles = adminPortal ? [] : AUTH_PROVIDERS;
   const isInactive = (provider: string) =>
     KEYED_PROVIDERS.has(provider) && enabled !== null && !enabled.includes(provider);
 
@@ -145,8 +148,8 @@ export default function AuthNeon({ initialMode = "magic" }: { initialMode?: Mode
 
   // Altijd de canonieke origin: preview-hosts mogen nooit in een OAuth-redirect
   // belanden, anders weigert Google met `redirect_uri_mismatch`.
-  const callbackURL = authCallbackUrl(POST_AUTH_PATH);
-  const errorCallbackURL = authCallbackUrl(SIGN_IN_PATH);
+  const callbackURL = adminPortal && typeof window !== "undefined" ? `${window.location.origin}${POST_AUTH_PATH}` : authCallbackUrl(POST_AUTH_PATH);
+  const errorCallbackURL = adminPortal && typeof window !== "undefined" ? `${window.location.origin}${SIGN_IN_PATH}` : authCallbackUrl(SIGN_IN_PATH);
 
   const onEmailChange = (value: string) => {
     setEmail(value);
@@ -330,6 +333,7 @@ export default function AuthNeon({ initialMode = "magic" }: { initialMode?: Mode
 
   const signUp = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (adminPortal) return;
     if (!emailAccepted()) return;
     if (password.length < MIN_PASSWORD_LENGTH) {
       toast.error(`Gebruik minstens ${MIN_PASSWORD_LENGTH} tekens.`);
@@ -388,19 +392,19 @@ export default function AuthNeon({ initialMode = "magic" }: { initialMode?: Mode
   return (
     <AppLayout>
       <div className="flex min-h-[calc(100vh-4rem)] w-full flex-col items-center justify-center bg-background p-4">
-        <div className="w-full max-w-md">
+        {!adminPortal && <div className="w-full max-w-md">
           <Link
             to="/"
             className="mb-3 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
           >
             <ArrowLeft className="h-4 w-4" /> {t("auth.back")}
           </Link>
-        </div>
+        </div>}
 
         <div className="w-full max-w-md rounded-2xl border border-border bg-card p-5 sm:p-7">
           <div className="mb-4">
-            <h1 className="mb-1 font-display text-2xl text-foreground">{t("auth.title")}</h1>
-            <p className="text-sm text-muted-foreground">{t("auth.subtitle")}</p>
+            <h1 className="mb-1 font-display text-2xl text-foreground">{adminPortal ? "ROUT beheer" : t("auth.title")}</h1>
+            <p className="text-sm text-muted-foreground">{adminPortal ? "Inloggen" : t("auth.subtitle")}</p>
           </div>
 
           <div
@@ -566,13 +570,13 @@ export default function AuthNeon({ initialMode = "magic" }: { initialMode?: Mode
                 >
                   <Mail className="h-3.5 w-3.5" aria-hidden /> {t("auth.password.magic")}
                 </button>
-                <button
+                {!adminPortal && <button
                   type="button"
                   onClick={() => setMode("signup")}
                   className="text-[11px] text-muted-foreground underline underline-offset-4 hover:text-foreground"
                 >
                   {t("auth.signup.cta")}
-                </button>
+                </button>}
               </div>
             </form>
           ) : (

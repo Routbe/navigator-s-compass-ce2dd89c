@@ -7,7 +7,7 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
-import { lazy, Suspense, useEffect, type ReactNode } from "react";
+import { lazy, Suspense, useEffect, useState, type ReactNode } from "react";
 import { useRouterState } from "@tanstack/react-router";
 import { DevModeToggle } from "@/components/DevModeToggle";
 
@@ -32,7 +32,11 @@ const AdminAppShell =
 
 function ShellSwitch({ children }: { children: ReactNode }) {
   const path = useRouterState({ select: (s) => s.location.pathname });
-  const Shell = AdminAppShell && isAdminPath(path) ? AdminAppShell : PublicAppShell;
+  const [previewAdminAuth, setPreviewAdminAuth] = useState(false);
+  useEffect(() => {
+    setPreviewAdminAuth(!isModeFixed() && path.startsWith("/auth") && detectShellMode() === "admin");
+  }, [path]);
+  const Shell = AdminAppShell && (isAdminMode() || isAdminPath(path) || previewAdminAuth) ? AdminAppShell : PublicAppShell;
   return (
     <Suspense fallback={null}>
       <Shell>{children}</Shell>

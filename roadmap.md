@@ -1,4 +1,6 @@
 # Roadmap
+- [ ] Portaalscheiding: navigatie, aanmelding, servertoegang en afzonderlijke versies controleren en corrigeren
+- [ ] Portaalscheiding: gerichte regressietests en openbare/browsercontrole
 - [x] A: typecheck + tests groen
 - [x] B: cleanup-assets cron (user_assets + shared_files, fail-safe) + schema docs
 - [x] C: Opera/Chromium storage + SVG ids

@@ -1,6 +1,7 @@
 import { createFileRoute, notFound } from "@tanstack/react-router";
 
 import AuthNeon from "@/pages/AuthNeon";
+import { isAdminMode } from "@/lib/app-mode";
 
 /**
  * Inloggen en aanmelden via de eigen ROUT-kaart; de Neon Auth-client
@@ -11,15 +12,15 @@ import AuthNeon from "@/pages/AuthNeon";
 export const Route = createFileRoute("/auth/$authView")({
   head: () => ({
     meta: [
-      { title: "Inloggen of aanmelden bij ROUT" },
+      { title: isAdminMode() ? "Inloggen | ROUT beheerportaal" : "Inloggen of aanmelden bij ROUT" },
       {
         name: "description",
-        content: "Meld je aan of maak een account om je QR-codes en korte links te beheren.",
+        content: isAdminMode() ? "Beveiligde toegang tot het ROUT beheerportaal." : "Meld je aan of maak een account om je QR-codes en korte links te beheren.",
       },
-      { property: "og:title", content: "Inloggen of aanmelden bij ROUT" },
+      { property: "og:title", content: isAdminMode() ? "Inloggen | ROUT beheerportaal" : "Inloggen of aanmelden bij ROUT" },
       {
         property: "og:description",
-        content: "Meld je aan of maak een account om je QR-codes en korte links te beheren.",
+        content: isAdminMode() ? "Beveiligde toegang tot het ROUT beheerportaal." : "Meld je aan of maak een account om je QR-codes en korte links te beheren.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },

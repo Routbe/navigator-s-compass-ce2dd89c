@@ -14,7 +14,7 @@ import { MobileMenu } from "@/components/MobileMenu";
 import { LanguageToggle } from "@/components/LanguageToggle";
 
 import { cn } from "@/lib/utils";
-import { AdminPortalNav, useInAdminPortal } from "@/components/admin/AdminPortalNav";
+import { usePortalFrame } from "./PortalContext";
 import { useHeaderReveal } from "@/hooks/useHeaderReveal";
 
 export interface Crumb {
@@ -52,47 +52,8 @@ export function AppLayout({
 }: AppLayoutProps) {
   const hidden = useHeaderReveal();
   const { t } = useTranslation();
-  const inPortal = useInAdminPortal();
-  return (
-    <div className="flex min-h-screen flex-col bg-background">
-      <header
-        data-testid="app-header"
-        data-hidden={hidden ? "true" : "false"}
-        className={cn(
-          "fixed left-0 right-0 top-0 z-50 w-full border-b border-border/50 bg-background/90 backdrop-blur-md transition-transform duration-300 ease-in-out",
-          hidden ? "-translate-y-full" : "translate-y-0",
-        )}
-      >
-        <div className="container mx-auto flex h-16 items-center gap-4 px-4">
-          <Link to="/" className="shrink-0" aria-label="ROUT home">
-            <RoutLogo size={28} />
-          </Link>
-
-          <div className="ml-auto flex items-center gap-2">
-            <Link to="/explore" className="hidden px-2 text-sm text-muted-foreground hover:text-foreground sm:inline">
-              {t("explore.crumb")}
-            </Link>
-            <LanguageToggle className="hidden sm:inline-flex" />
-            <InviteButton />
-            <ProfileMenu />
-            <MobileMenu />
-          </div>
-        </div>
-      </header>
-
-      <main className={cn("flex-1 pt-16", inPortal && "lg:flex")}>
-        {inPortal ? (
-          <aside className="border-b border-border/50 px-4 py-4 lg:sticky lg:top-16 lg:h-[calc(100vh-4rem)] lg:w-64 lg:shrink-0 lg:overflow-y-auto lg:border-b-0 lg:border-r">
-            <AdminPortalNav />
-          </aside>
-        ) : null}
-        <div
-          className={cn(
-            "mx-auto w-full min-w-0",
-            width === "full" ? "max-w-full" : "px-4 py-8 sm:px-6",
-            width === "wide" ? "max-w-7xl" : width === "default" ? "max-w-5xl" : "",
-          )}
-        >
+  const Frame = usePortalFrame();
+  const heading = (
           {(crumbs?.length || title) && (
             <div className="mb-6 grid grid-cols-[minmax(0,1fr)_auto] items-end gap-4 sm:flex sm:flex-wrap sm:justify-between">
               <div className="min-w-0">
@@ -128,6 +89,44 @@ export function AppLayout({
               {actions ? <div className="shrink-0">{actions}</div> : null}
             </div>
           )}
+  );
+  if (Frame) return <Frame heading={heading} width={width}>{children}</Frame>;
+  return (
+    <div className="flex min-h-screen flex-col bg-background">
+      <header
+        data-testid="app-header"
+        data-hidden={hidden ? "true" : "false"}
+        className={cn(
+          "fixed left-0 right-0 top-0 z-50 w-full border-b border-border/50 bg-background/90 backdrop-blur-md transition-transform duration-300 ease-in-out",
+          hidden ? "-translate-y-full" : "translate-y-0",
+        )}
+      >
+        <div className="container mx-auto flex h-16 items-center gap-4 px-4">
+          <Link to="/" className="shrink-0" aria-label="ROUT home">
+            <RoutLogo size={28} />
+          </Link>
+
+          <div className="ml-auto flex items-center gap-2">
+            <Link to="/explore" className="hidden px-2 text-sm text-muted-foreground hover:text-foreground sm:inline">
+              {t("explore.crumb")}
+            </Link>
+            <LanguageToggle className="hidden sm:inline-flex" />
+            <InviteButton />
+            <ProfileMenu />
+            <MobileMenu />
+          </div>
+        </div>
+      </header>
+
+      <main className="flex-1 pt-16">
+        <div
+          className={cn(
+            "mx-auto w-full min-w-0",
+            width === "full" ? "max-w-full" : "px-4 py-8 sm:px-6",
+            width === "wide" ? "max-w-7xl" : width === "default" ? "max-w-5xl" : "",
+          )}
+        >
+          {heading}
 
           {children}
         </div>

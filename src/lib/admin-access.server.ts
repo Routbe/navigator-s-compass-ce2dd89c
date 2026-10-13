@@ -66,6 +66,8 @@ export async function hasAdminPermission(
 }
 
 export async function assertAdminPermission(userId: string, permission: AdminPermission) {
+  const { isPublicMode } = await import("./app-mode");
+  if (isPublicMode()) throw new Error("forbidden");
   if (!(await hasAdminPermission(userId, permission))) {
     throw new Error("forbidden");
   }

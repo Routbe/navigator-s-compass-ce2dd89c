@@ -8,17 +8,12 @@ import {
   PanelsTopLeft,
   BookOpen,
   Palette,
-  ShieldCheck,
-  ReceiptText,
-  ScrollText,
-  Mail,
 } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { Link } from "@/lib/router-compat";
 import type { LucideIcon } from "lucide-react";
-import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { useI18n } from "@/lib/i18n";
 
 const itemClass =
@@ -40,19 +35,6 @@ const INFRASTRUCTURE = [
   { to: "/domains", label: "Custom Domains", hint: "menu.domains.hint", icon: Globe },
   { to: "/console", label: "Developer Console", hint: "menu.api.hint", icon: PanelsTopLeft },
   { to: "/self-hosting", label: "Open Source & Docs", hint: "menu.docs.hint", icon: BookOpen },
-] as const;
-
-/** Only rendered for accounts holding the admin role. */
-const ADMIN_TOOLS = [
-  { to: "/admin", label: "Super Admin Portal", hint: "menu.adminPortal.hint", icon: ShieldCheck },
-  {
-    to: "/admin?tab=inbound",
-    label: "Inbound Payments",
-    hint: "menu.adminPayments.hint",
-    icon: ReceiptText,
-  },
-  { to: "/admin?tab=audit", label: "Audit Log", hint: "menu.adminAudit.hint", icon: ScrollText },
-  { to: "/admin/contact", label: "Contact Messages", hint: "menu.adminContact.hint", icon: Mail },
 ] as const;
 
 interface NavItem {
@@ -83,7 +65,6 @@ function Section({ title, items }: { title: string; items: readonly NavItem[] })
 /** Platform tools & infrastructure only — account links live in the profile popover. */
 export function MobileMenu({ className }: { className?: string }) {
   const [open, setOpen] = useState(false);
-  const { isAdmin } = useIsAdmin();
   const { t } = useI18n();
 
   return (
@@ -108,7 +89,6 @@ export function MobileMenu({ className }: { className?: string }) {
         <div className="mt-4 flex min-h-0 flex-1 flex-col gap-3" onClick={() => setOpen(false)}>
           <Section title={t("menu.tools")} items={TOOLS} />
           <Section title={t("menu.infrastructure")} items={INFRASTRUCTURE} />
-          {isAdmin ? <Section title={t("menu.admin")} items={ADMIN_TOOLS} /> : null}
 
           <div
             className="mt-auto flex items-center gap-2 border-t border-border pt-4"
