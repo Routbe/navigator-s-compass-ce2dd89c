@@ -278,12 +278,9 @@ export default function AuthNeon({ initialMode = "magic" }: { initialMode?: Mode
     setLoading(true);
     const address = email.trim().toLowerCase();
     try {
-      const result = await authClient.signIn.magicLink({
-        email: address,
-        callbackURL,
-        errorCallbackURL,
-        fetchOptions: { headers: { "x-altcha": await takeProof(address) } },
-      });
+      const result = await withAltcha(address, (proof) =>
+        authClient.signIn.magicLink({ email: address, callbackURL, errorCallbackURL, fetchOptions: { headers: { "x-altcha": proof } } }),
+      );
       const error = (result as { error?: { message?: string; code?: string } } | undefined)?.error;
       if (error) {
         toast.error(
@@ -306,12 +303,10 @@ export default function AuthNeon({ initialMode = "magic" }: { initialMode?: Mode
     if (!emailAccepted()) return;
     setLoading(true);
     try {
-      const result = await authClient.signIn.email({
-        email: email.trim().toLowerCase(),
-        password,
-        callbackURL,
-        fetchOptions: { headers: { "x-altcha": await takeProof(email.trim().toLowerCase()) } },
-      });
+      const address = email.trim().toLowerCase();
+      const result = await withAltcha(address, (proof) =>
+        authClient.signIn.email({ email: address, password, callbackURL, fetchOptions: { headers: { "x-altcha": proof } } }),
+      );
       const error = (result as { error?: { message?: string } } | undefined)?.error;
       if (error) {
         toast.error(error.message || t("auth.toast.signinFailed"));
@@ -342,13 +337,9 @@ export default function AuthNeon({ initialMode = "magic" }: { initialMode?: Mode
     setLoading(true);
     const address = email.trim().toLowerCase();
     try {
-      const result = await authClient.signUp.email({
-        email: address,
-        password,
-        name: address.split("@")[0] ?? address,
-        callbackURL,
-        fetchOptions: { headers: { "x-altcha": await takeProof(address) } },
-      });
+      const result = await withAltcha(address, (proof) =>
+        authClient.signUp.email({ email: address, password, name: address.split("@")[0] ?? address, callbackURL, fetchOptions: { headers: { "x-altcha": proof } } }),
+      );
       const error = (result as { error?: { message?: string } } | undefined)?.error;
       if (error) {
         toast.error(error.message || t("auth.toast.failed"));
