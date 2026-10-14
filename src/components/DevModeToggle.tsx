@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useRouterState } from "@tanstack/react-router";
-import { canSwitchShellMode, isAdminPath, MODE_OVERRIDE_KEY, type ShellMode } from "@/lib/app-mode";
+import { canSwitchShellMode, detectShellMode, isAdminPath, MODE_OVERRIDE_KEY, type ShellMode } from "@/lib/app-mode";
 import { cn } from "@/lib/utils";
 
 /** Floating [Publiek] / [Admin] switch for development and previews; never on pinned builds. */
@@ -10,7 +10,8 @@ export function DevModeToggle() {
   const [visible, setVisible] = useState(false);
   useEffect(() => setVisible(canSwitchShellMode()), []);
   if (!visible) return null;
-  const active: ShellMode = isAdminPath(path) ? "admin" : "public";
+  // The admin sign-in lives on /auth too, so the stored override decides there.
+  const active: ShellMode = isAdminPath(path) || (path.startsWith("/auth") && detectShellMode() === "admin") ? "admin" : "public";
 
   const pick = (mode: ShellMode) => {
     try {
@@ -18,7 +19,8 @@ export function DevModeToggle() {
     } catch {
       /* storage blocked */
     }
-    void navigate({ to: mode === "admin" ? "/admin" : "/" } as never);
+    if (mode === "public" && path.startsWith("/auth")) window.location.assign("/auth/sign-in");
+    else void navigate({ to: mode === "admin" ? "/admin" : "/" } as never);
   };
 
   return (

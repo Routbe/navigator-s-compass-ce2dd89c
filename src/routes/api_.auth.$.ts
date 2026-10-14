@@ -34,8 +34,15 @@ async function checkAltcha(request: Request): Promise<Response | null> {
   const requireHard = email ? await identityNeedsHardChallenge(throttleHashForEmail(email)) : false;
   const result = await verifyAltcha(request.headers.get("x-altcha"), { requireHard });
   if (result.ok) return null;
+  console.warn(`[auth] altcha rejected: ${result.reason}`);
+  if (result.reason === "store_unavailable") {
+    return Response.json(
+      { code: "altcha_store_unavailable", message: "De beveiligingscontrole is tijdelijk niet bereikbaar. Probeer het over een minuut opnieuw." },
+      { status: 503, headers: { "cache-control": "no-store" } },
+    );
+  }
   return Response.json(
-    { code: "altcha_invalid", message: "Botcontrole mislukt. Probeer het opnieuw." },
+    { code: "altcha_invalid", reason: result.reason, message: "Botcontrole mislukt. Probeer het opnieuw." },
     { status: 400, headers: { "cache-control": "no-store" } },
   );
 }

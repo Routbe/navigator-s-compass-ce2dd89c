@@ -90,3 +90,24 @@ export async function takeProof(email?: string): Promise<string> {
   void prefetchProof().catch(() => null);
   return proof;
 }
+
+/** Always solves a brand-new challenge (no cache) — used for one retry after a rejected proof. */
+export async function freshProof(email?: string): Promise<string> {
+  cached = null;
+  const identityHash = email ? await sha256Hex(`${THROTTLE_SALT}|${email.trim().toLowerCase()}`) : undefined;
+  const ch = (await getAltchaChallenge({ data: identityHash ? { identityHash } : {} })) as Challenge;
+  return solve(ch);
+}
+
+/** True when an auth response was rejected by the bot check. */
+export function isAltchaRejection(result: unknown): boolean {
+  const code = (result as { error?: { code?: string } } | undefined)?.error?.code;
+  return typeof code === "string" && code.toLowerCase() === "altcha_invalid";
+}
+
+/** Runs an auth call with a proof; retries once with a freshly solved proof if the bot check rejects it. */
+export async function withAltcha<T>(email: string | undefined, run: (proof: string) => Promise<T>): Promise<T> {
+  const first = await run(await takeProof(email));
+  if (!isAltchaRejection(first)) return first;
+  return run(await freshProof(email));
+}
