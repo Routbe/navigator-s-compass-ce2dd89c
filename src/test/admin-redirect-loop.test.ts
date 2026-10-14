@@ -11,6 +11,6 @@ describe('Admin portal redirect logic', () => {
     const decision = modeDecision('admin', DEFAULT_DESTINATION);
     expect(decision.kind).toBe('redirect');
     if (decision.kind !== 'redirect') throw new Error('expected redirect');
-    expect(decision.to).toContain('/admin');
+    expect(decision.to).toBe('/auth/sign-in?redirect=%2Fadmin');
   });
 });
