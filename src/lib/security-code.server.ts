@@ -28,6 +28,8 @@ export async function issueSecurityCode(userId: string, purpose: SecurityPurpose
   const email = await emailOf(userId);
   if (!email) return { ok: false as const, reason: "no_email" as const };
   const code = generateOtp();
+  // Lazy cleanup: verification already ignores expired rows; old ones are dropped here, non-blocking.
+  void purgeExpiredSecurityCodes().catch(() => undefined);
   await sql`update public.security_codes set consumed_at = now()
     where user_id = ${userId} and purpose = ${purpose} and consumed_at is null`;
   await sql`insert into public.security_codes (user_id, purpose, code_hash, expires_at)
@@ -35,6 +37,14 @@ export async function issueSecurityCode(userId: string, purpose: SecurityPurpose
   const { sendLocalizedEmail, localeFromRequest } = await import("@/lib/email.server");
   await sendLocalizedEmail({ to: email, intent: "verification", locale: localeFromRequest(request ?? null), payload: { code } });
   return { ok: true as const, sentTo: maskEmail(email) };
+}
+
+/** Deletes codes that expired over 30 minutes ago or were already used. */
+export async function purgeExpiredSecurityCodes(): Promise<{ deleted: number }> {
+  const rows = (await sql`delete from public.security_codes
+    where expires_at < now() - interval '30 minutes' or consumed_at < now() - interval '30 minutes'
+    returning 1`) as unknown[];
+  return { deleted: rows.length };
 }
 
 /** Consumes the code when it matches. */

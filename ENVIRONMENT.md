@@ -168,7 +168,7 @@ Live Presence (Studio → Verbindingen & Integraties). Create an app at develope
 - `DIDIT_API_KEY`, `DIDIT_WORKFLOW_ID`, `DIDIT_WEBHOOK_SECRET` — Didit passport scan. Webhook URL: `https://rout.be/api/public/identity/didit-webhook`. Max 500 successful scans per month.
 
 ## Cron schedule
-`vercel.json` schedules `/api/public/cron/cleanup-assets` (daily, removes expired `user_assets` and `shared_files` from storage and database), `purge-altcha` and `check-dns`. Vercel sends `Authorization: Bearer $CRON_SECRET`. On other hosts call the same URLs from any scheduler with that header.
+`vercel.json` schedules `/api/public/cron/cleanup-assets` (daily, removes expired `user_assets` and `shared_files` from storage and database), plus expired ALTCHA rows, security codes and the DNS check — one daily job, since Vercel Hobby allows only one. Codes are also purged lazily on issue, ALTCHA on ~5% of challenges, and integration statuses refresh on visit (stale-while-revalidate). Vercel sends `Authorization: Bearer $CRON_SECRET`. On other hosts call the same URLs from any scheduler with that header.
 
 ## Telegram
 Register the webhook once with `TELEGRAM_BOT_TOKEN=... bun scripts/telegram-set-webhook.ts https://rout.be` (secret token is derived from the bot token).

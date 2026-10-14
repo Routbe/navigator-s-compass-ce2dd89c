@@ -452,19 +452,40 @@ export async function publicIntegrations(handle: string, mode: "pro" | "social" 
   );
   return Promise.all(
     shown.map(async ({ row, ...m }) => {
-      let status = (row["status_json"] as IntegrationStatus | null) ?? null;
+      const cached = (row["status_json"] as IntegrationStatus | null) ?? null;
       const at = row["status_at"] ? Date.parse(String(row["status_at"])) : 0;
       const item = integrationById(m.provider);
       const ttl = m.provider === "lichess" || m.provider === "chesscom" ? CHESS_TTL_MS : STATUS_TTL_MS;
       if (item?.mode === "handle" && mayFetchLive(switches, m.provider) && Date.now() - at > ttl) {
-        const fresh = await fetchStatus(m.provider, m.handle);
-        if (fresh) {
-          status = fresh;
-          await sql`update public.user_integrations set status_json = ${JSON.stringify(fresh)}::jsonb, status_at = now()
-                     where user_id = ${String(row["user_id"])} and provider = ${m.provider}`.catch(() => undefined);
+        const refresh = refreshStatus(String(row["user_id"]), m.provider, m.handle, row["status_at"]);
+        // Stale-while-revalidate: serve the cache now, refresh for the next visitor.
+        if (cached) {
+          void refresh.catch(() => undefined);
+          return { ...m, status: cached };
         }
+        return { ...m, status: await refresh.catch(() => null) };
       }
-      return { ...m, status };
+      return { ...m, status: cached };
     }),
   );
+}
+
+/**
+ * Claims the stale row (compare-and-set on status_at) so concurrent visitors
+ * trigger one upstream fetch, then stores the fresh status. Returns null when
+ * another request already claimed it or the fetch failed.
+ */
+async function refreshStatus(userId: string, provider: string, handle: string, seenAt: unknown): Promise<IntegrationStatus | null> {
+  const prev = seenAt ? String(seenAt) : null;
+  const claimed = (await sql`update public.user_integrations set status_at = now()
+     where user_id = ${userId} and provider = ${provider}
+       and status_at is not distinct from ${prev}::timestamptz
+     returning provider`) as Row[];
+  if (!claimed.length) return null;
+  const fresh = await fetchStatus(provider, handle);
+  if (fresh) {
+    await sql`update public.user_integrations set status_json = ${JSON.stringify(fresh)}::jsonb, status_at = now()
+       where user_id = ${userId} and provider = ${provider}`;
+  }
+  return fresh;
 }
