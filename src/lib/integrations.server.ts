@@ -469,3 +469,23 @@ export async function publicIntegrations(handle: string, mode: "pro" | "social" 
     }),
   );
 }
+
+/**
+ * Claims the stale row (compare-and-set on status_at) so concurrent visitors
+ * trigger one upstream fetch, then stores the fresh status. Returns null when
+ * another request already claimed it or the fetch failed.
+ */
+async function refreshStatus(userId: string, provider: string, handle: string, seenAt: unknown): Promise<IntegrationStatus | null> {
+  const prev = seenAt ? String(seenAt) : null;
+  const claimed = (await sql`update public.user_integrations set status_at = now()
+     where user_id = ${userId} and provider = ${provider}
+       and status_at is not distinct from ${prev}::timestamptz
+     returning provider`) as Row[];
+  if (!claimed.length) return null;
+  const fresh = await fetchStatus(provider, handle);
+  if (fresh) {
+    await sql`update public.user_integrations set status_json = ${JSON.stringify(fresh)}::jsonb, status_at = now()
+       where user_id = ${userId} and provider = ${provider}`;
+  }
+  return fresh;
+}
