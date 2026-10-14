@@ -28,7 +28,7 @@ import { Altcha } from "@/components/Altcha";
 import { AUTH_PROVIDERS, KEYED_PROVIDERS, FediverseDialog, ProviderMark } from "@/components/auth/ProviderKit";
 import { isAdminMode } from "@/lib/app-mode";
 import { usePortalFrame } from "@/components/layout/PortalContext";
-import { takeProof } from "@/lib/altcha-client";
+import { withAltcha } from "@/lib/altcha-client";
 import { OtpInput } from "@/components/otp/OtpInput";
 import { redeemLoginCodeFn } from "@/lib/login-code.functions";
 
