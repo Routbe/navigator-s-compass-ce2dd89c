@@ -12,11 +12,24 @@ async function handle(request: Request) {
   if (provided !== secret) return new Response("Unauthorized", { status: 401 });
   const { purgeExpiredAssets } = await import("@/lib/assets.server");
   const { purgeExpiredSharedFiles } = await import("@/lib/storage/shared-files.server");
-  // Each purge is fail-safe per object; one failing source never blocks the other.
-  const [assets, sharedFiles] = await Promise.allSettled([purgeExpiredAssets(), purgeExpiredSharedFiles()]);
+  const { purgeExpiredAltcha } = await import("@/lib/altcha.server");
+  const { purgeExpiredSecurityCodes } = await import("@/lib/security-code.server");
+  const { runDnsPropagationCheck } = await import("@/lib/subdomain-claims.server");
+  // The single daily job (Vercel Hobby allows one): every purge is independent and fail-safe.
+  const [assets, sharedFiles, altcha, codes, dns] = await Promise.allSettled([
+    purgeExpiredAssets(),
+    purgeExpiredSharedFiles(),
+    purgeExpiredAltcha(),
+    purgeExpiredSecurityCodes(),
+    runDnsPropagationCheck(),
+  ]);
+  const pick = (r: PromiseSettledResult<unknown>) => (r.status === "fulfilled" ? r.value : { error: true });
   return Response.json({
-    assets: assets.status === "fulfilled" ? assets.value : { error: true },
-    sharedFiles: sharedFiles.status === "fulfilled" ? sharedFiles.value : { error: true },
+    assets: pick(assets),
+    sharedFiles: pick(sharedFiles),
+    altcha: pick(altcha),
+    securityCodes: pick(codes),
+    dns: pick(dns),
   });
 }
 

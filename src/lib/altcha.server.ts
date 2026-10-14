@@ -49,6 +49,8 @@ async function hmacKey(): Promise<string> {
 const sha256 = (value: string) => createHash("sha256").update(value).digest("hex");
 
 export async function createAltchaChallenge(opts: { hard?: boolean } = {}): Promise<AltchaChallenge> {
+  // Lazy cleanup instead of an hourly cron: ~5% of challenges purge expired replay rows, non-blocking.
+  if (Math.random() < 0.05) void purgeExpiredAltcha().catch(() => undefined);
   const maxnumber = opts.hard ? ALTCHA_HARD_MAX : ALTCHA_DEFAULT_MAX;
   const expires = Math.floor(Date.now() / 1000) + TTL_SECONDS;
   const salt = `${randomBytes(12).toString("hex")}?expires=${expires}&d=${opts.hard ? "h" : "n"}`;
