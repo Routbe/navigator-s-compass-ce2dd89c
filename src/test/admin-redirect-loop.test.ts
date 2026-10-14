@@ -10,6 +10,7 @@ describe('Admin portal redirect logic', () => {
     // In admin mode, /dashboard triggers a redirect to sign-in (or /admin)
     const decision = modeDecision('admin', DEFAULT_DESTINATION);
     expect(decision.kind).toBe('redirect');
+    if (decision.kind !== 'redirect') throw new Error('expected redirect');
     expect(decision.to).toContain('/admin');
   });
 });
